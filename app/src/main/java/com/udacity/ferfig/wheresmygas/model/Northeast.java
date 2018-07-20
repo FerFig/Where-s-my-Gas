@@ -33,6 +33,7 @@ public class Northeast implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected Northeast(Parcel in) {
         this.lat = ((Double) in.readValue((Double.class.getClassLoader())));
         this.lng = ((Double) in.readValue((Double.class.getClassLoader())));

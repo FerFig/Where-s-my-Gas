@@ -33,6 +33,7 @@ public class Location implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected Location(Parcel in) {
         this.lat = ((Double) in.readValue((Double.class.getClassLoader())));
         this.lng = ((Double) in.readValue((Double.class.getClassLoader())));

@@ -30,6 +30,7 @@ public class OpeningHours implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected OpeningHours(Parcel in) {
         this.openNow = ((Boolean) in.readValue((Boolean.class.getClassLoader())));
     }

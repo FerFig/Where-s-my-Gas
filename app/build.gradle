@@ -10,7 +10,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        //Add string resource API KEY to querie Google Play Services, from local properties file
+        //Add string resource API KEY to queries Google Play Services, from local properties file
         resValue "string", "google_api_key", (project.findProperty("GOOGLE_API_KEY") ?: "")
     }
     buildTypes {
@@ -54,6 +54,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    //TODO: remove this (tool to browse the sqllite database)
+    //TODO: remove this (tool to browse the SQLite database)
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
 }

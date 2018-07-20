@@ -33,6 +33,7 @@ public class Southwest implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected Southwest(Parcel in) {
         this.lat = ((Double) in.readValue((Double.class.getClassLoader())));
         this.lng = ((Double) in.readValue((Double.class.getClassLoader())));

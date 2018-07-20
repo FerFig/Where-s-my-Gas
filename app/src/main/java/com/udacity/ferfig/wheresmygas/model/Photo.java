@@ -17,7 +17,7 @@ public class Photo implements Parcelable
     private Integer height;
     @SerializedName("html_attributions")
     @Expose
-    private List<String> htmlAttributions = new ArrayList<String>();
+    private List<String> htmlAttributions = new ArrayList<>();
     @SerializedName("photo_reference")
     @Expose
     private String photoReference;
@@ -41,6 +41,7 @@ public class Photo implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected Photo(Parcel in) {
         this.height = ((Integer) in.readValue((Integer.class.getClassLoader())));
         in.readList(this.htmlAttributions, (java.lang.String.class.getClassLoader()));

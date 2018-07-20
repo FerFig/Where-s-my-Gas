@@ -33,6 +33,7 @@ public class Viewport implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected Viewport(Parcel in) {
         this.northeast = ((Northeast) in.readValue((Northeast.class.getClassLoader())));
         this.southwest = ((Southwest) in.readValue((Southwest.class.getClassLoader())));

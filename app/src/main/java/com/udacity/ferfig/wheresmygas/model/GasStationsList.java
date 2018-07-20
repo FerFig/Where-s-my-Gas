@@ -14,10 +14,10 @@ public class GasStationsList implements Parcelable
 
     @SerializedName("html_attributions")
     @Expose
-    private List<Object> htmlAttributions = new ArrayList<Object>();
+    private List<Object> htmlAttributions = new ArrayList<>();
     @SerializedName("results")
     @Expose
-    private List<Result> results = new ArrayList<Result>();
+    private List<Result> results = new ArrayList<>();
     @SerializedName("status")
     @Expose
     private String status;
@@ -38,6 +38,7 @@ public class GasStationsList implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected GasStationsList(Parcel in) {
         in.readList(this.htmlAttributions, (java.lang.Object.class.getClassLoader()));
         in.readList(this.results, (Result.class.getClassLoader()));

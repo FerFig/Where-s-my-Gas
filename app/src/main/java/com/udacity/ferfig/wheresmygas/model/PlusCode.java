@@ -33,6 +33,7 @@ public class PlusCode implements Parcelable
     }
     ;
 
+    @SuppressWarnings("WeakerAccess")
     protected PlusCode(Parcel in) {
         this.compoundCode = ((String) in.readValue((String.class.getClassLoader())));
         this.globalCode = ((String) in.readValue((String.class.getClassLoader())));
