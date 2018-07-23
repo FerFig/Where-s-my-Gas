@@ -11,12 +11,11 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/fragmentMap"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="300dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:context="com.example.currentplacedetailsonmap.MapsActivityCurrentPlace" />
 
@@ -29,9 +28,9 @@
         app:elevation="@dimen/fab_elevation"
         app:layout_anchor="@+id/fragmentMap"
         app:layout_anchorGravity="right|end|bottom"
-        app:layout_constraintBottom_toBottomOf="@+id/fragmentMap"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/svNearbyPlaces"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/svNearbyPlaces"
+        app:layout_constraintStart_toStartOf="@+id/svNearbyPlaces"
         app:pressedTranslationZ="@dimen/fab_pressed_translation_z" />
 
     <ScrollView
@@ -40,14 +39,14 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragmentMap">
+        app:layout_constraintStart_toEndOf="@+id/fragmentMap"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.436">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rvNearbyPlaces"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-             />
+            android:layout_height="wrap_content" />
     </ScrollView>
 
 </android.support.constraint.ConstraintLayout>

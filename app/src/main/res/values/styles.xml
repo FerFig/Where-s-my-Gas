@@ -1,5 +1,4 @@
 <resources>
-
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
@@ -8,4 +7,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ShareFabSelectLocation">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:src">@drawable/places_ic_search</item>
+        <item name="android:translationZ">@dimen/fab_translation_z</item>
+        <item name="borderWidth">0dp</item>
+        <item name="rippleColor">@color/color_primary_light</item>
+        <item name="elevation">@dimen/fab_elevation</item>
+    </style>
 </resources>

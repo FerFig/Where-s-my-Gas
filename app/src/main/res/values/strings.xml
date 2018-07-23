@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Where\'s my Gas</string>
+
+
+    <!-- SnackBar Actions -->
+    <string name="retry_internet_connection">RETRY</string>
+    <string name="retry_permissions">REQUEST AGAIN</string>
+    <string name="retry_permissions_message">Location permission not granted. Nearby search is not available!</string>
+    <string name="retry_internet_connection_message">Error occurred retrieving gas stations!</string>
+
+    <!-- SnackBar Messages  -->
+
 </resources>
