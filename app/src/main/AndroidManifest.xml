@@ -29,6 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".provider.GasStationContentProvider"
+            android:authorities="com.udacity.ferfig.wheresmygas"
+            android:exported="false"/>
     </application>
 
 </manifest>
