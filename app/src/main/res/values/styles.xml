@@ -15,5 +15,7 @@
         <item name="borderWidth">0dp</item>
         <item name="rippleColor">@color/color_primary_light</item>
         <item name="elevation">@dimen/fab_elevation</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
     </style>
 </resources>

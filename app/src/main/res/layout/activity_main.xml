@@ -1,53 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainActivityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/mainActivityLayout"
     tools:context=".MainActivity">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/fragmentMap"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:context="com.example.currentplacedetailsonmap.MapsActivityCurrentPlace" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/fragmentMap"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.6"
+            tools:context="com.example.currentplacedetailsonmap.MapsActivityCurrentPlace" />
+
+        <ScrollView
+            android:id="@+id/svNearbyPlaces"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.4"
+            app:layout_constraintTop_toBottomOf="@+id/fragmentMap">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvNearbyPlaces"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </ScrollView>
+
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabActionSelectLocation"
         style="@style/ShareFabSelectLocation"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
         android:elevation="@dimen/fab_elevation"
         app:elevation="@dimen/fab_elevation"
         app:layout_anchor="@+id/fragmentMap"
         app:layout_anchorGravity="right|end|bottom"
-        app:layout_constraintBottom_toBottomOf="@+id/fragmentMap"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/svNearbyPlaces"
         app:pressedTranslationZ="@dimen/fab_pressed_translation_z" />
-
-    <ScrollView
-        android:id="@+id/svNearbyPlaces"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragmentMap">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rvNearbyPlaces"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-             />
-    </ScrollView>
-
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>

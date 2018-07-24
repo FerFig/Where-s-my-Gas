@@ -14,8 +14,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ScrollView;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,6 +55,7 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, SnackBarAction{
 
     private static final int REQUEST_ACTIVATION_RESULT = 27;
+    private static final int REQUEST_PICK_LOCATION_RESULT = 63;
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
 
@@ -66,6 +72,8 @@ public class MainActivity extends AppCompatActivity
     private Location mSearchLocation;
 
     private long mSearchAreaRadius = Utils.MAP_DEFAULT_SEARCH_RADIUS;
+
+    private LatLngBounds mLastPickedLocation;
 
     private GasStationsList mGasStationsList;
 
@@ -88,9 +96,12 @@ public class MainActivity extends AppCompatActivity
             mSearchLocation = savedInstanceState.getParcelable(Utils.STORE_MAP_CAMERA_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(Utils.STORE_MAP_CAMERA_POSITION);
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
+            mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
         }
 
         setContentView(R.layout.activity_main);
+
+        ButterKnife.bind(this);
 
         // Construct a FusedLocationProviderClient to get Last Know Location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -109,6 +120,7 @@ public class MainActivity extends AppCompatActivity
             outState.putParcelable(Utils.STORE_MAP_CAMERA_LOCATION, mSearchLocation);
             outState.putLong(Utils.STORE_SEARCH_AREA_RADIUS, mSearchAreaRadius);
             outState.putParcelable(Utils.STORE_GAS_STATIONS, mGasStationsList);
+            outState.putParcelable(Utils.STORE_LAST_PICKED_LOCATION, mLastPickedLocation);
         }
         super.onSaveInstanceState(outState);
     }
@@ -139,8 +151,40 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_ACTIVATION_RESULT) {
-            onMapReady(mMap);
+        switch (requestCode) {
+            case REQUEST_ACTIVATION_RESULT:
+                onMapReady(mMap);
+                break;
+            case REQUEST_PICK_LOCATION_RESULT:
+                if (resultCode == RESULT_OK){
+                    Place place = PlacePicker.getPlace(this, data);
+                    if (place == null) {
+                        Utils.showSnackBar(findViewById(android.R.id.content),
+                                getString(R.string.sb_text_no_place_selected),
+                                null,
+                                Snackbar.LENGTH_SHORT,
+                                null,
+                                null);
+                    }
+                    else {
+                        mSearchLocation = new Location(LocationManager.GPS_PROVIDER);
+                        mSearchLocation.setLatitude(place.getLatLng().latitude);
+                        mSearchLocation.setLongitude(place.getLatLng().longitude);
+
+                        mLastPickedLocation = place.getViewport();
+
+                        getNearbyGasStations(false);
+                    }
+                }
+                else{
+                    Utils.showSnackBar(findViewById(android.R.id.content),
+                            getString(R.string.sb_text_place_picker_cancelled),
+                            null,
+                            Snackbar.LENGTH_SHORT,
+                            null,
+                            null);
+                }
+                break;
         }
     }
 
@@ -501,11 +545,29 @@ public class MainActivity extends AppCompatActivity
 
     @OnClick({R.id.fabActionSelectLocation})
     public void fabClick(View view) {
-        Utils.showSnackBar(findViewById(android.R.id.content),
-                "fab clicked!",
-                "",
-                Snackbar.LENGTH_SHORT,
-                null,
-                null);
+        if (Utils.hasLocationPermission(this)) {
+            try {
+                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                Intent intent = builder.build(this);
+
+                if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
+
+                startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
+            } catch (GooglePlayServicesRepairableException e) {
+                Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
+            } catch (GooglePlayServicesNotAvailableException e) {
+                Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
+            } catch (Exception e) {
+                Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
+            }
+        }
+        else {
+            Utils.showSnackBar(findViewById(android.R.id.content),
+                    getString(R.string.sb_text_retry_permissions_message),
+                    getString(R.string.snackbar_action_permissions_request),
+                    Snackbar.LENGTH_INDEFINITE,
+                    MainActivity.this,
+                    SnackBarActions.REQUEST_PERMISSIONS);
+        }
     }
 }

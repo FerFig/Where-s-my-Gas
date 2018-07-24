@@ -16,5 +16,7 @@
     <string name="sb_text_response_empty_list">No gas stations found in current area!</string>
     <string name="sb_text_error_failed_network_request">The network request has failed!</string>
     <string name="sb_text_no_internet_connectivity">No internet connection!</string>
+    <string name="sb_text_no_place_selected">No place selected</string>
+    <string name="sb_text_place_picker_cancelled">No location selected!</string>
 
 </resources>

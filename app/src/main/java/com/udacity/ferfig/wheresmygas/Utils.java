@@ -32,6 +32,7 @@ public class Utils {
     public static final String STORE_MAP_CAMERA_POSITION = "wmg_cam_position";
     public static final String STORE_MAP_CAMERA_LOCATION = "wmg_cam_location";
     public static final String STORE_GAS_STATIONS = "wmg_gas_stations";
+    public static final String STORE_LAST_PICKED_LOCATION = "wmg_last_picked_location";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
     private static final LatLng MAP_DEFAULT_LOCATION = new LatLng(38.736946, -9.142685); //Portugal - Lisbon location
