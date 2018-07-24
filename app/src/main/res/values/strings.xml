@@ -1,13 +1,20 @@
 <resources>
     <string name="app_name">Where\'s my Gas</string>
 
-
     <!-- SnackBar Actions -->
-    <string name="retry_internet_connection">RETRY</string>
-    <string name="retry_permissions">REQUEST AGAIN</string>
-    <string name="retry_permissions_message">Location permission not granted. Nearby search is not available!</string>
-    <string name="retry_internet_connection_message">Error occurred retrieving gas stations!</string>
+    <string name="snackbar_action_retry">RETRY</string>
+    <string name="snackbar_action_permissions_request">REQUEST AGAIN</string>
+    <string name="snackbar_action_wider_search">WIDER SEARCH</string>
+    <string name="snackbar_action_activate_location">ACTIVATE</string>
 
     <!-- SnackBar Messages  -->
+    <string name="sb_text_retry_permissions_message">Location permission not granted! Nearby search not available</string>
+    <string name="sb_text_activate_location">Location services not active! Nearby search not available</string>
+    <string name="sb_text_retry_internet_connection_message">Error occurred retrieving gas stations!</string>
+    <string name="sb_text_response_null_message">No results returned from search!</string>
+    <string name="sb_text_response_failed_request">An error occurred, please try again!</string>
+    <string name="sb_text_response_empty_list">No gas stations found in current area!</string>
+    <string name="sb_text_error_failed_network_request">The network request has failed!</string>
+    <string name="sb_text_no_internet_connectivity">No internet connection!</string>
 
 </resources>

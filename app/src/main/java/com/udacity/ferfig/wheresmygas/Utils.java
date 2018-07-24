@@ -27,13 +27,16 @@ public class Utils {
     public static final String TAG = "Where's my Gas";
 
     // Keys to store activity state
-    public static final String STORE_MAP_CAMERA_POSITION = "wheresmygas_camera_position";
-    public static final String STORE_MAP_CAMERA_LOCATION = "wheresmygas_camera_location";
+    public static final String STORE_LAST_KNOW_LOCATION = "wmg_last_know_location";
+    public static final String STORE_SEARCH_AREA_RADIUS = "wmg_search_radius";
+    public static final String STORE_MAP_CAMERA_POSITION = "wmg_cam_position";
+    public static final String STORE_MAP_CAMERA_LOCATION = "wmg_cam_location";
+    public static final String STORE_GAS_STATIONS = "wmg_gas_stations";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
     private static final LatLng MAP_DEFAULT_LOCATION = new LatLng(38.736946, -9.142685); //Portugal - Lisbon location
 
-    public static final String MAP_DEFAULT_SEARCH_RADIUS = "1500";
+    public static final long MAP_DEFAULT_SEARCH_RADIUS = 1500;
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
@@ -44,6 +47,12 @@ public class Utils {
             ni = cm.getActiveNetworkInfo();
         }
         return ni != null && ni.isConnected();
+    }
+
+    public static boolean isLocationServiceActive(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
     public static void showSnackBar(View container, String message, String actionText, int duration,
@@ -81,7 +90,9 @@ public class Utils {
     public enum SnackBarActions {
         RETRY_CONNECTION,
         REQUEST_PERMISSIONS,
-        RETRY_GET_NEARBY_STATIONS
+        RETRY_GET_NEARBY_STATIONS,
+        RETRY_GET_NEARBY_STATIONS_IN_WIDER_AREA,
+        REQUEST_LOCATION_ACTIVATION
     }
 
     public static boolean hasLocationPermission(Context context) {
