@@ -7,14 +7,12 @@ import android.os.Parcelable;
 /* class to store favorite gas stations */
 public final class GasStation implements Parcelable {
 
-    private long mId;
     private String mName;
-    private String mLatitude;
-    private String mLongitude;
+    private Double mLatitude;
+    private Double mLongitude;
     private String mDetails;
 
-    public GasStation(long mId, String mName, String mLatitude, String mLongitude, String mDetails) {
-        this.mId = mId;
+    public GasStation(String mName, Double mLatitude, Double mLongitude, String mDetails) {
         this.mName = mName;
         this.mLatitude = mLatitude;
         this.mLongitude = mLongitude;
@@ -23,10 +21,9 @@ public final class GasStation implements Parcelable {
 
     /** Parcelable Stuff **/
     protected GasStation(Parcel in) {
-        mId = in.readLong();
         mName = in.readString();
-        mLatitude = in.readString();
-        mLongitude = in.readString();
+        mLatitude = in.readDouble();
+        mLongitude = in.readDouble();
         mDetails = in.readString();
     }
 
@@ -49,51 +46,42 @@ public final class GasStation implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(mId);
         dest.writeString(mName);
-        dest.writeString(mLatitude);
-        dest.writeString(mLongitude);
+        dest.writeDouble(mLatitude);
+        dest.writeDouble(mLongitude);
         dest.writeString(mDetails);
     }
 
     /** getters and setters **/
-    public long getmId() {
-        return mId;
-    }
-
-    public void setmId(long mId) {
-        this.mId = mId;
-    }
-
-    public String getmName() {
+    public String getName() {
         return mName;
     }
 
-    public void setmName(String mName) {
+    public void setName(String mName) {
         this.mName = mName;
     }
 
-    public String getmLatitude() {
+    public Double getLatitude() {
         return mLatitude;
     }
 
-    public void setmLatitude(String mLatitude) {
+    public void setLatitude(Double mLatitude) {
         this.mLatitude = mLatitude;
     }
 
-    public String getmLongitude() {
+    public Double getLongitude() {
         return mLongitude;
     }
 
-    public void setmLongitude(String mLongitude) {
+    public void setLongitude(Double mLongitude) {
         this.mLongitude = mLongitude;
     }
 
-    public String getmDetails() {
+    public String getDetails() {
         return mDetails;
     }
 
-    public void setmDetails(String mDetails) {
+    public void setDetails(String mDetails) {
         this.mDetails = mDetails;
     }
 }

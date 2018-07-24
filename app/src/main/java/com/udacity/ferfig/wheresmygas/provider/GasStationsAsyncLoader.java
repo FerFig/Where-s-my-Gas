@@ -32,10 +32,9 @@ public class GasStationsAsyncLoader extends GasStationsAsyncTaskLoader<ArrayList
                 if (cursor != null) {
                     while (cursor.moveToNext()) {
                         GasStation gasStation = new GasStation(
-                                cursor.getLong(cursor.getColumnIndex(GasStationEntry._ID)),
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_NAME)),
-                                cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LATITUDE)),
-                                cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE)),
+                                cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LATITUDE)),
+                                cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE)),
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DETAILS)));
                         mAsyncGasStationList.add(gasStation);
                     }

@@ -1,5 +1,6 @@
 package com.udacity.ferfig.wheresmygas.provider;
 
+import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -28,6 +29,9 @@ public class GasStationContract {
         public static final String COLUMN_GAS_STATION_LATITUDE = "latitude";
         public static final String COLUMN_GAS_STATION_LONGITUDE = "longitude";
         public static final String COLUMN_GAS_STATION_DETAILS = "details";
-    }
 
+        public static Uri buildGasStationUri(long gasStationId) {
+            return ContentUris.withAppendedId(CONTENT_URI, gasStationId);
+        }
+    }
 }

@@ -41,6 +41,7 @@ import com.udacity.ferfig.wheresmygas.Utils.SnackBarActions;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.model.GasStationsList;
 import com.udacity.ferfig.wheresmygas.model.Result;
+import com.udacity.ferfig.wheresmygas.provider.DbUtils;
 import com.udacity.ferfig.wheresmygas.provider.GasStationsAsyncLoader;
 
 import java.util.ArrayList;
@@ -250,7 +251,6 @@ public class MainActivity extends AppCompatActivity
 
                         }
                         else {//gasStationsList.size()) == 0
-                            //TODO: ask to redo search in wider area
                             Utils.showSnackBar(findViewById(android.R.id.content),
                                     getString(R.string.sb_text_response_empty_list),
                                     getString(R.string.snackbar_action_wider_search),
@@ -320,20 +320,25 @@ public class MainActivity extends AppCompatActivity
                     .position(location)
                     .snippet(Utils.formatDistance(distance));
 
-            //TODO: favorite gas stations display...
-            if (gasStation.getName().equals("<favorite gas statio>")) {
+// TODO save favorites to DB using the content provider
+//            DbUtils.addGasStationToDB(this,
+//                    new GasStation(gasStation.getName(), gasLat, gasLon, gasStation.getPlaceId()));
+
+            if (isFavotiteGasStation(gasStation.getName())) {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }
-            if (gasStation.getOpeningHours() != null) {
-                if (gasStation.getOpeningHours().getOpenNow()) {
-                    // open now
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                } else {
-                    // not opened = show in different color
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+            else { // non favorite
+                if (gasStation.getOpeningHours() != null) {
+                    if (gasStation.getOpeningHours().getOpenNow()) {
+                        // open now
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    } else {
+                        // not opened = show in different color
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                    }
+                } else { // unknow if it's open or not! show dimmed/different color...
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                 }
-            } else { // unknow if it's open or not! show dimmed/different color...
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
             }
 
             markersBounds.include(markerOptions.getPosition());
@@ -584,6 +589,15 @@ public class MainActivity extends AppCompatActivity
                     MainActivity.this,
                     SnackBarActions.REQUEST_PERMISSIONS);
         }
+    }
+
+    private boolean isFavotiteGasStation(String gasStationName) {
+        for (GasStation gasStation:mFavoriteGasStations) {
+            if (gasStation.getName().equals(gasStationName)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private void getDataFromLocalDB() {
