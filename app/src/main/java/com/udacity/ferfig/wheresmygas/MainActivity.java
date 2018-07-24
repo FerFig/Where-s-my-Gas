@@ -5,8 +5,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -35,9 +38,12 @@ import com.google.android.gms.tasks.Task;
 import com.udacity.ferfig.wheresmygas.Api.ClientConfig;
 import com.udacity.ferfig.wheresmygas.Api.RetrofitClient;
 import com.udacity.ferfig.wheresmygas.Utils.SnackBarActions;
+import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.model.GasStationsList;
 import com.udacity.ferfig.wheresmygas.model.Result;
+import com.udacity.ferfig.wheresmygas.provider.GasStationsAsyncLoader;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +58,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, SnackBarAction{
+        implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>> {
 
     private static final int REQUEST_ACTIVATION_RESULT = 27;
     private static final int REQUEST_PICK_LOCATION_RESULT = 63;
@@ -77,6 +83,8 @@ public class MainActivity extends AppCompatActivity
 
     private GasStationsList mGasStationsList;
 
+    private ArrayList<GasStation> mFavoriteGasStations;
+
     @BindView(R.id.svNearbyPlaces)
     ScrollView mSvNearbyPlaces;
 
@@ -97,6 +105,7 @@ public class MainActivity extends AppCompatActivity
             mCameraPosition = savedInstanceState.getParcelable(Utils.STORE_MAP_CAMERA_POSITION);
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
             mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
+            mFavoriteGasStations = savedInstanceState.getParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS);
         }
 
         setContentView(R.layout.activity_main);
@@ -110,6 +119,11 @@ public class MainActivity extends AppCompatActivity
         SupportMapFragment fragmentMap = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragmentMap);
         fragmentMap.getMapAsync(this);
+
+        // Retrieve favorite stations
+        if (savedInstanceState == null) {
+            getDataFromLocalDB();
+        }
     }
 
     @Override
@@ -121,6 +135,7 @@ public class MainActivity extends AppCompatActivity
             outState.putLong(Utils.STORE_SEARCH_AREA_RADIUS, mSearchAreaRadius);
             outState.putParcelable(Utils.STORE_GAS_STATIONS, mGasStationsList);
             outState.putParcelable(Utils.STORE_LAST_PICKED_LOCATION, mLastPickedLocation);
+            outState.putParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS, mFavoriteGasStations);
         }
         super.onSaveInstanceState(outState);
     }
@@ -570,4 +585,46 @@ public class MainActivity extends AppCompatActivity
                     SnackBarActions.REQUEST_PERMISSIONS);
         }
     }
+
+    private void getDataFromLocalDB() {
+
+        LoaderManager.LoaderCallbacks<ArrayList<GasStation>> callback = MainActivity.this;
+
+        Bundle bundleForLoader = new Bundle();
+
+        Loader<String> moviesLoaderFromLocalDB = getSupportLoaderManager().getLoader(GasStationsAsyncLoader.LOADER_ID);
+        if (moviesLoaderFromLocalDB!=null){
+            Log.w(Utils.TAG, "MainActivity: getDataFromLocalDB: restartLoader");
+            getSupportLoaderManager().restartLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
+        }else {
+            Log.w(Utils.TAG, "MainActivity: getDataFromLocalDB: initLoader");
+            getSupportLoaderManager().initLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
+        }
+    }
+
+    /* BEGIN LoaderCallbacks Methods */
+    @NonNull
+    @Override
+    public Loader<ArrayList<GasStation>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new GasStationsAsyncLoader(this, getContentResolver());
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<GasStation>> loader, ArrayList<GasStation> data) {
+        //loader finished, discard it
+        getSupportLoaderManager().destroyLoader(loader.getId());
+
+        if (null != data) {
+            mFavoriteGasStations = data;
+        }
+//        else {
+//            showErrorMessage(R.string.error_message_text);
+//        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<GasStation>> loader) {
+
+    }
+    /* END LoaderCallbacks Methods */
 }
