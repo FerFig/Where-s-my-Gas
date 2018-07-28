@@ -12,14 +12,16 @@ public final class GasStation implements Parcelable {
     private Double mLatitude;
     private Double mLongitude;
     private Float mDistance;
+    private String mAddress;
     private String mDetails;
 
-    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String details) {
+    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, String details) {
         this.mName = name;
         this.mImageUrl = imageUrl;
         this.mLatitude = latitude;
         this.mLongitude = longitude;
         this.mDistance = distance;
+        this.mAddress = address;
         this.mDetails = details;
     }
 
@@ -30,6 +32,7 @@ public final class GasStation implements Parcelable {
         mLatitude = in.readDouble();
         mLongitude = in.readDouble();
         mDistance = in.readFloat();
+        mAddress = in.readString();
         mDetails = in.readString();
     }
 
@@ -57,6 +60,7 @@ public final class GasStation implements Parcelable {
         dest.writeDouble(mLatitude);
         dest.writeDouble(mLongitude);
         dest.writeFloat(mDistance);
+        dest.writeString(mAddress);
         dest.writeString(mDetails);
     }
 
@@ -98,6 +102,14 @@ public final class GasStation implements Parcelable {
 
     public void setDistance(Float distance) {
         this.mDistance = distance;
+    }
+
+    public String getAddress() {
+        return mAddress;
+    }
+
+    public void setAddress(String address) {
+        this.mAddress = address;
     }
 
     public String getDetails() {
