@@ -13,9 +13,9 @@ public final class GasStation implements Parcelable {
     private Double mLongitude;
     private Float mDistance;
     private String mAddress;
-    private String mDetails;
+    private Result mDetails;
 
-    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, String details) {
+    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, Result details) {
         this.mName = name;
         this.mImageUrl = imageUrl;
         this.mLatitude = latitude;
@@ -33,7 +33,7 @@ public final class GasStation implements Parcelable {
         mLongitude = in.readDouble();
         mDistance = in.readFloat();
         mAddress = in.readString();
-        mDetails = in.readString();
+        mDetails = in.readParcelable(Result.class.getClassLoader());
     }
 
     public static final Creator<GasStation> CREATOR = new Creator<GasStation>() {
@@ -61,7 +61,7 @@ public final class GasStation implements Parcelable {
         dest.writeDouble(mLongitude);
         dest.writeFloat(mDistance);
         dest.writeString(mAddress);
-        dest.writeString(mDetails);
+        mDetails.writeToParcel(dest, flags);
     }
 
     /** getters and setters **/
@@ -112,11 +112,11 @@ public final class GasStation implements Parcelable {
         this.mAddress = address;
     }
 
-    public String getDetails() {
+    public Result getDetails() {
         return mDetails;
     }
 
-    public void setDetails(String details) {
+    public void setDetails(Result details) {
         this.mDetails = details;
     }
 }
