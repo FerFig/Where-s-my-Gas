@@ -12,8 +12,10 @@ public class DbUtils {
     public static boolean addGasStationToDB(Context context, GasStation gasStation) {
         ContentValues cv = new ContentValues();
         cv.put(GasStationEntry.COLUMN_GAS_STATION_NAME, gasStation.getName());
+        cv.put(GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL, gasStation.getImageUrl());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_LATITUDE, gasStation.getLatitude());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE, gasStation.getLongitude());
+        cv.put(GasStationEntry.COLUMN_GAS_STATION_DISTANCE, gasStation.getDistance());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_DETAILS, gasStation.getDetails());
 
         ContentResolver cr = context.getContentResolver();

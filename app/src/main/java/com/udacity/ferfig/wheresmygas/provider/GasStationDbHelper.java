@@ -22,11 +22,12 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_TABLE = "CREATE TABLE " + GasStationEntry.TABLE_NAME + " (" +
                 GasStationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GasStationEntry.COLUMN_GAS_STATION_NAME + " TEXT NOT NULL, " +
-                GasStationEntry.COLUMN_GAS_STATION_LATITUDE + " TEXT NOT NULL, " +
-                GasStationEntry.COLUMN_GAS_STATION_LONGITUDE + " TEXT NOT NULL, " +
-                GasStationEntry.COLUMN_GAS_STATION_DETAILS + " TEXT NOT NULL, " +
-                "UNIQUE (" + GasStationEntry.COLUMN_GAS_STATION_NAME + ") ON CONFLICT REPLACE" +
-                "); ";
+                GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL + " TEXT, " +
+                GasStationEntry.COLUMN_GAS_STATION_LATITUDE + " REAL NOT NULL, " +
+                GasStationEntry.COLUMN_GAS_STATION_LONGITUDE + " REAL NOT NULL, " +
+                GasStationEntry.COLUMN_GAS_STATION_DISTANCE + " REAL, " +
+                GasStationEntry.COLUMN_GAS_STATION_DETAILS + " TEXT " +
+                ");";
 
         db.execSQL(SQL_CREATE_TABLE);
     }

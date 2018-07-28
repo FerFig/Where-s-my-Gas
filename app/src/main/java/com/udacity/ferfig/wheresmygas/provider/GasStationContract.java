@@ -26,8 +26,10 @@ public class GasStationContract {
 
         // columns
         public static final String COLUMN_GAS_STATION_NAME = "name";
+        public static final String COLUMN_GAS_STATION_IMAGE_URL = "image";
         public static final String COLUMN_GAS_STATION_LATITUDE = "latitude";
         public static final String COLUMN_GAS_STATION_LONGITUDE = "longitude";
+        public static final String COLUMN_GAS_STATION_DISTANCE = "distance";
         public static final String COLUMN_GAS_STATION_DETAILS = "details";
 
         public static Uri buildGasStationUri(long gasStationId) {
