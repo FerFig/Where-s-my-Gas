@@ -8,22 +8,28 @@ import android.os.Parcelable;
 public final class GasStation implements Parcelable {
 
     private String mName;
+    private String mImageUrl;
     private Double mLatitude;
     private Double mLongitude;
+    private Float mDistance;
     private String mDetails;
 
-    public GasStation(String mName, Double mLatitude, Double mLongitude, String mDetails) {
-        this.mName = mName;
-        this.mLatitude = mLatitude;
-        this.mLongitude = mLongitude;
-        this.mDetails = mDetails;
+    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String details) {
+        this.mName = name;
+        this.mImageUrl = imageUrl;
+        this.mLatitude = latitude;
+        this.mLongitude = longitude;
+        this.mDistance = distance;
+        this.mDetails = details;
     }
 
     /** Parcelable Stuff **/
     protected GasStation(Parcel in) {
         mName = in.readString();
+        mImageUrl = in.readString();
         mLatitude = in.readDouble();
         mLongitude = in.readDouble();
+        mDistance = in.readFloat();
         mDetails = in.readString();
     }
 
@@ -47,8 +53,10 @@ public final class GasStation implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mName);
+        dest.writeString(mImageUrl);
         dest.writeDouble(mLatitude);
         dest.writeDouble(mLongitude);
+        dest.writeFloat(mDistance);
         dest.writeString(mDetails);
     }
 
@@ -57,31 +65,46 @@ public final class GasStation implements Parcelable {
         return mName;
     }
 
-    public void setName(String mName) {
-        this.mName = mName;
+    public void setName(String name) {
+        this.mName = name;
     }
 
+    public String getImageUrl() {
+        return mImageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.mImageUrl = imageUrl;
+    }
     public Double getLatitude() {
         return mLatitude;
     }
 
-    public void setLatitude(Double mLatitude) {
-        this.mLatitude = mLatitude;
+    public void setLatitude(Double latitude) {
+        this.mLatitude = latitude;
     }
 
     public Double getLongitude() {
         return mLongitude;
     }
 
-    public void setLongitude(Double mLongitude) {
-        this.mLongitude = mLongitude;
+    public void setLongitude(Double longitude) {
+        this.mLongitude = longitude;
+    }
+
+    public Float getDistance() {
+        return mDistance;
+    }
+
+    public void setDistance(Float distance) {
+        this.mDistance = distance;
     }
 
     public String getDetails() {
         return mDetails;
     }
 
-    public void setDetails(String mDetails) {
-        this.mDetails = mDetails;
+    public void setDetails(String details) {
+        this.mDetails = details;
     }
 }
