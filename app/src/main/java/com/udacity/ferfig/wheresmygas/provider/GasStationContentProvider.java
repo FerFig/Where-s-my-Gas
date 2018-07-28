@@ -1,6 +1,7 @@
 package com.udacity.ferfig.wheresmygas.provider;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -71,7 +72,13 @@ public class GasStationContentProvider extends ContentProvider {
         }
 
         // Set a notification URI on the Cursor and return that Cursor
-        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        Context context = getContext();
+        if (context != null) {
+            ContentResolver contentResolver = context.getContentResolver();
+            if (contentResolver != null) {
+                retCursor.setNotificationUri(contentResolver, uri);
+            }
+        }
 
         // Return the desired Cursor
         return retCursor;
@@ -107,7 +114,13 @@ public class GasStationContentProvider extends ContentProvider {
         }
 
         // Notify the resolver if the uri has been changed, and return the newly inserted URI
-        getContext().getContentResolver().notifyChange(uri, null);
+        Context context = getContext();
+        if (context != null) {
+            ContentResolver contentResolver = context.getContentResolver();
+            if (contentResolver != null) {
+                contentResolver.notifyChange(uri, null);
+            }
+        }
 
         // Return constructed uri (this points to the newly inserted row of data)
         return returnUri;    }
@@ -133,7 +146,13 @@ public class GasStationContentProvider extends ContentProvider {
         // Notify the resolver of a change and return the number of items deleted
         if (gasStationsDeleted != 0) {
             // A gas station (or more) was deleted, set notification
-            getContext().getContentResolver().notifyChange(uri, null);
+            Context context = getContext();
+            if (context != null) {
+                ContentResolver contentResolver = context.getContentResolver();
+                if (contentResolver!=null) {
+                    contentResolver.notifyChange(uri, null);
+                }
+            }
         }
         // Return the number of gas stations deleted
         return gasStationsDeleted;
@@ -162,7 +181,13 @@ public class GasStationContentProvider extends ContentProvider {
         // Notify the resolver of a change and return the number of items updated
         if (gasStationsUpdated != 0) {
             // A gas station (or more) was updated, set notification
-            getContext().getContentResolver().notifyChange(uri, null);
+            Context context = getContext();
+            if (context != null) {
+                ContentResolver contentResolver = context.getContentResolver();
+                if (contentResolver!=null) {
+                    contentResolver.notifyChange(uri, null);
+                }
+            }
         }
         // Return the number of gas stations deleted
         return gasStationsUpdated;
