@@ -10,7 +10,7 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
     // DB name & version
     private static final String DATABASE_NAME = "wheresmygas.db";
     // If database schema changed, must increment the database version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     GasStationDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
