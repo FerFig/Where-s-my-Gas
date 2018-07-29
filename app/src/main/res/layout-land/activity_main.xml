@@ -19,21 +19,23 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.6"
+            android:layout_weight="0.5"
             tools:context="com.example.currentplacedetailsonmap.MapsActivityCurrentPlace" />
 
-        <ScrollView
-            android:id="@+id/svNearbyPlaces"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_layout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
+            android:layout_weight="0.5"
             app:layout_constraintVertical_bias="0.436">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rvNearbyPlaces"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </ScrollView>
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton

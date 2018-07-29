@@ -10,6 +10,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,7 +18,6 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.ScrollView;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -34,6 +34,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -62,12 +63,15 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>> {
+        implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>>
+        , SwipeRefreshLayout.OnRefreshListener{
 
     private static final int REQUEST_ACTIVATION_RESULT = 27;
     private static final int REQUEST_PICK_LOCATION_RESULT = 63;
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
+
+    private List<Marker> mMarkers = new ArrayList<>();
 
     private boolean mLocationPermissionGranted;
 
@@ -85,8 +89,10 @@ public class MainActivity extends AppCompatActivity
 
     private ArrayList<GasStation> mFavoriteGasStations;
 
-    @BindView(R.id.svNearbyPlaces)
-    ScrollView mSvNearbyPlaces;
+    private boolean mIsRefreshing = false;
+
+    @BindView(R.id.swipe_refresh_layout)
+    SwipeRefreshLayout mSrlNearbyPlaces;
 
     @BindView(R.id.fabActionSelectLocation)
     FloatingActionButton mFabActionSelectLocation;
@@ -111,6 +117,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
+
+        mSrlNearbyPlaces.setOnRefreshListener(this);
 
         // Construct a FusedLocationProviderClient to get Last Know Location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -153,6 +161,9 @@ public class MainActivity extends AppCompatActivity
             case RETRY_CONNECTION:
                 onMapReady(mMap);
                 break;
+            case RETRY_CONNECTION_REFRESH:
+                onRefresh();
+                break;
             case REQUEST_PERMISSIONS:
                 Utils.requestLocationPermission(this);
                 break;
@@ -162,11 +173,34 @@ public class MainActivity extends AppCompatActivity
             case RETRY_GET_NEARBY_STATIONS_IN_WIDER_AREA:
                 getNearbyGasStations(true);
                 break;
+            case SELECT_LOCATION:
+                UpdateRefreshingUi();
+                selectLocation();
+                break;
             case REQUEST_LOCATION_ACTIVATION:
+                UpdateRefreshingUi();
                 startActivityForResult(
                         new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS),
                         REQUEST_ACTIVATION_RESULT);
         }
+    }
+
+    @Override
+    public void onRefresh() {
+        if (!Utils.isInternetAvailable(getApplicationContext())) {
+            Utils.showSnackBar(findViewById(android.R.id.content),
+                    getString(R.string.sb_text_no_internet_connectivity),
+                    getString(R.string.snackbar_action_retry),
+                    Snackbar.LENGTH_INDEFINITE,
+                    MainActivity.this,
+                    SnackBarActions.RETRY_CONNECTION_REFRESH);
+            return;
+        }
+
+        mIsRefreshing = true;
+        mSrlNearbyPlaces.setRefreshing(mIsRefreshing);
+
+        getNearbyGasStations(false);
     }
 
     @Override
@@ -210,6 +244,36 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getNearbyGasStations(boolean bSearchWiderArea){
+        if (!Utils.isInternetAvailable(getApplicationContext())) {
+            UpdateRefreshingUi();
+
+            Utils.showSnackBar(findViewById(android.R.id.content),
+                    getString(R.string.sb_text_no_internet_connectivity),
+                    getString(R.string.snackbar_action_retry),
+                    Snackbar.LENGTH_INDEFINITE,
+                    MainActivity.this,
+                    SnackBarActions.RETRY_CONNECTION);
+            return;
+        }
+
+        // If search location is null try to get the last known location...
+        if (mSearchLocation == null){
+            mSearchLocation = Utils.getLastKnownLocation(this);
+
+            // ...if we still cant get the last location prompt the user to select one
+            if (mSearchLocation == null){
+                UpdateRefreshingUi();
+
+                Utils.showSnackBar(findViewById(android.R.id.content),
+                        getString(R.string.sb_text_unknown_location),
+                        getString(R.string.snackbar_action_select_location),
+                        Snackbar.LENGTH_INDEFINITE,
+                        MainActivity.this,
+                        SnackBarActions.SELECT_LOCATION);
+                return;
+            }
+        }
+
         if (bSearchWiderArea) {
             mSearchAreaRadius += Utils.MAP_DEFAULT_SEARCH_RADIUS; //TODO: add max search area logic
         } else {
@@ -234,6 +298,8 @@ public class MainActivity extends AppCompatActivity
         gasStationsCall.enqueue(new Callback<GasStationsList>() {
             @Override
             public void onResponse(@NonNull Call<GasStationsList> call, @NonNull Response<GasStationsList> response) {
+                UpdateRefreshingUi();
+
                 if (response.code() == 200) {
                     GasStationsList gasStationsList = response.body();
 
@@ -285,6 +351,8 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(@NonNull Call<GasStationsList> call, @NonNull Throwable t) {
+                UpdateRefreshingUi();
+
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_error_failed_network_request),
                         getString(R.string.snackbar_action_retry),
@@ -295,8 +363,16 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void UpdateRefreshingUi() {
+        if (mIsRefreshing) {
+            mIsRefreshing = false;
+            mSrlNearbyPlaces.setRefreshing(false);
+        }
+    }
+
     private void addStationsToMap(List<Result> gasStationListResult) {
         mMap.clear(); //remove any previous added marker...
+        mMarkers.clear();
 
         LatLngBounds.Builder markersBounds = new LatLngBounds.Builder(); //store markers bounds
 
@@ -357,7 +433,9 @@ public class MainActivity extends AppCompatActivity
 
             markersBounds.include(markerOptions.getPosition());
 
-            mMap.addMarker(markerOptions);
+            Marker newMarker = mMap.addMarker(markerOptions);
+            newMarker.setTag(gasStation.getId());
+            mMarkers.add(newMarker);
 
             gasStationList.add(new GasStation(
                     gasStation.getId(),
@@ -394,17 +472,15 @@ public class MainActivity extends AppCompatActivity
                 new GasStationsAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(GasStation gasStationData) {
-//                        //prepare the intent to call detail activity
-//                        Intent mDetailIntent = new Intent(getApplicationContext(), mDetails.class);
-//                        //And send it to the detail activity
-//                        mDetailIntent.putExtra(Utils.SINGLE_DETAILS_OBJECT, mData);
-//                        startActivityForResult(mDetailIntent, ID_FOR_ACTIVITY_RESULT);
-                        Utils.showSnackBar(findViewById(android.R.id.content),
-                                "Clicked: " + gasStationData.getName(),
-                                null,
-                                Snackbar.LENGTH_SHORT,
-                                null,
-                                null);
+                        for (Marker marker:mMarkers) {
+                            if (marker.getTag() == gasStationData.getId()) {
+                                marker.showInfoWindow();
+                                mMap.animateCamera(CameraUpdateFactory.newLatLng(
+                                        marker.getPosition()));
+                                break;
+                            }
+                        }
+
                     }
                 },
                 new GasStationsAdapter.OnFavoritesClickListener() {
@@ -420,6 +496,11 @@ public class MainActivity extends AppCompatActivity
                 new GasStationsAdapter.OnDirectionsClickListener() {
                     @Override
                     public void onDirectionsClick(GasStation gasStationData) {
+//                        //prepare the intent to call detail activity
+//                        Intent mDetailIntent = new Intent(getApplicationContext(), mDetails.class);
+//                        //And send it to the detail activity
+//                        mDetailIntent.putExtra(Utils.SINGLE_DETAILS_OBJECT, mData);
+//                        startActivityForResult(mDetailIntent, ID_FOR_ACTIVITY_RESULT);
                         Utils.showSnackBar(findViewById(android.R.id.content),
                                 "Directions to: " + gasStationData.getName(),
                                 null,
@@ -445,6 +526,8 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        UpdateRefreshingUi();
+
         mMap = googleMap;
 
 //        // Use a custom info window adapter to handle multiple lines of text in the
@@ -662,65 +745,72 @@ public class MainActivity extends AppCompatActivity
     @OnClick({R.id.fabActionSelectLocation})
     public void fabClick(View view) {
         if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_PICK_LOCATION)) {
-            if (Utils.hasLocationPermission(this)) {
-                try {
-                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                    Intent intent = builder.build(this);
-
-                    if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
-
-                    startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
-                } catch (GooglePlayServicesRepairableException e) {
-                    Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
-                } catch (Exception e) {
-                    Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
-                }
-            } else {
-                Utils.showSnackBar(findViewById(android.R.id.content),
-                        getString(R.string.sb_text_retry_permissions_message),
-                        getString(R.string.snackbar_action_permissions_request),
-                        Snackbar.LENGTH_INDEFINITE,
-                        MainActivity.this,
-                        SnackBarActions.REQUEST_PERMISSIONS);
-            }
+            selectLocation();
         }
         else {
             getNearbyGasStations(false);
         }
     }
 
+    private void selectLocation() {
+        if (Utils.hasLocationPermission(this)) {
+            boolean activityStarted = false;
+            try {
+                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                Intent intent = builder.build(this);
+
+                if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
+
+                startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
+                activityStarted = true;
+            } catch (GooglePlayServicesRepairableException e) {
+                Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
+            } catch (GooglePlayServicesNotAvailableException e) {
+                Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
+            } catch (Exception e) {
+                Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
+            } finally {
+                if (!activityStarted){
+                    Utils.showSnackBar(findViewById(android.R.id.content),
+                            getString(R.string.sb_text_google_play_services_error),
+                            null,
+                            Snackbar.LENGTH_LONG,
+                            null,
+                            null);
+                }
+            }
+        } else {
+            Utils.showSnackBar(findViewById(android.R.id.content),
+                    getString(R.string.sb_text_retry_permissions_message),
+                    getString(R.string.snackbar_action_permissions_request),
+                    Snackbar.LENGTH_INDEFINITE,
+                    MainActivity.this,
+                    SnackBarActions.REQUEST_PERMISSIONS);
+        }
+    }
+
     private void addToFavorites(GasStation gasStation){
-        mFavoriteGasStations.add(gasStation);
-
         // save favorites to DB using the content provider
-        DbUtils.addGasStationToDB(getApplicationContext(), gasStation);
+        if (DbUtils.addGasStationToDB(getApplicationContext(), gasStation)){
+            mFavoriteGasStations.add(gasStation);
 
-        Utils.showSnackBar(findViewById(android.R.id.content),
-                gasStation.getName() + " added to favorites",
-                null,
-                Snackbar.LENGTH_SHORT,
-                null,
-                null);
+            // TODO: refresh ui
+        }
     }
 
     private void removeFromFavorites(GasStation gasStation) {
-        for (int i = 0; i < mFavoriteGasStations.size(); i++)
-            if (mFavoriteGasStations.get(i).getId().equals(gasStation.getId())) {
-                mFavoriteGasStations.remove(i);
-                break;
+        // delete favorites from DB using the content provider
+        if (DbUtils.deleteGasStationFromDB(getApplicationContext(), gasStation)) {
+
+            for (int i = 0; i < mFavoriteGasStations.size(); i++) {
+                if (mFavoriteGasStations.get(i).getId().equals(gasStation.getId())) {
+                    mFavoriteGasStations.remove(i);
+                    break;
+                }
             }
 
-        // delete favorites from DB using the content provider
-        DbUtils.deleteGasStationFromDB(getApplicationContext(), gasStation);
-
-        Utils.showSnackBar(findViewById(android.R.id.content),
-                gasStation.getName() + " removed from favorites",
-                null,
-                Snackbar.LENGTH_SHORT,
-                null,
-                null);
+            // TODO: refresh ui
+        }
     }
 
     private void getDataFromLocalDB() {

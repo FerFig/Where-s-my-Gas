@@ -6,6 +6,7 @@
     <string name="snackbar_action_permissions_request">REQUEST AGAIN</string>
     <string name="snackbar_action_wider_search">WIDER SEARCH</string>
     <string name="snackbar_action_activate_location">ACTIVATE</string>
+    <string name="snackbar_action_select_location">SELECT</string>
 
     <!-- SnackBar Messages  -->
     <string name="sb_text_retry_permissions_message">Location permission not granted! Nearby search not available</string>
@@ -18,5 +19,7 @@
     <string name="sb_text_no_internet_connectivity">No internet connection!</string>
     <string name="sb_text_no_place_selected">No place selected</string>
     <string name="sb_text_place_picker_cancelled">No location selected!</string>
+    <string name="sb_text_unknown_location">Last location unknown</string>
+    <string name="sb_text_google_play_services_error">Sorry, an error occurred (GooglePlayServices exception)</string>
 
 </resources>
