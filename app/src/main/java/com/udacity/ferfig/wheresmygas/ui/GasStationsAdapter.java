@@ -59,9 +59,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     public void onBindViewHolder(@NonNull GasStationViewHolder holder, int position) {
         Log.d(Utils.TAG, "Gas Station: " + mData.get(position).getName() + " ( " + position + " = " + String.valueOf(getItemCount()-1) + " )");
         holder.bind(mData.get(position),
-                itemClickListener, directionsClickListener, favoritesClickListener,
-                position,
-                getItemCount()-1);
+                itemClickListener, directionsClickListener, favoritesClickListener);
     }
 
     @Override

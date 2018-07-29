@@ -45,8 +45,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
     public void bind(final GasStation gasStationData,
                      final GasStationsAdapter.OnItemClickListener listener,
                      final GasStationsAdapter.OnDirectionsClickListener directionsClickListener,
-                     final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener,
-                     final int itemPosition, final int itemsCount) {
+                     final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener) {
 
         String gasStationName = gasStationData.getName();
         String gasStationAddress = gasStationData.getAddress();
