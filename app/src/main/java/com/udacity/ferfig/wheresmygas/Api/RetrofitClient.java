@@ -1,6 +1,6 @@
 package com.udacity.ferfig.wheresmygas.Api;
 
-import com.udacity.ferfig.wheresmygas.model.GasStationsList;
+import com.udacity.ferfig.wheresmygas.model.maps.GasStationsList;
 
 import java.util.Map;
 

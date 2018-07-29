@@ -1,5 +1,5 @@
 
-package com.udacity.ferfig.wheresmygas.model;
+package com.udacity.ferfig.wheresmygas.model.maps;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,5 @@
 
-package com.udacity.ferfig.wheresmygas.model;
+package com.udacity.ferfig.wheresmygas.model.maps;
 
 import android.os.Parcel;
 import android.os.Parcelable;

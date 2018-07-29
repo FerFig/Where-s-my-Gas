@@ -1,5 +1,5 @@
 
-package com.udacity.ferfig.wheresmygas.model;
+package com.udacity.ferfig.wheresmygas.model.maps;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Southwest implements Parcelable
+public class Northeast implements Parcelable
 {
 
     @SerializedName("lat")
@@ -16,30 +16,30 @@ public class Southwest implements Parcelable
     @SerializedName("lng")
     @Expose
     private Double lng;
-    public final static Parcelable.Creator<Southwest> CREATOR = new Creator<Southwest>() {
+    public final static Parcelable.Creator<Northeast> CREATOR = new Creator<Northeast>() {
 
 
         @SuppressWarnings({
             "unchecked"
         })
-        public Southwest createFromParcel(Parcel in) {
-            return new Southwest(in);
+        public Northeast createFromParcel(Parcel in) {
+            return new Northeast(in);
         }
 
-        public Southwest[] newArray(int size) {
-            return (new Southwest[size]);
+        public Northeast[] newArray(int size) {
+            return (new Northeast[size]);
         }
 
     }
     ;
 
     @SuppressWarnings("WeakerAccess")
-    protected Southwest(Parcel in) {
+    protected Northeast(Parcel in) {
         this.lat = ((Double) in.readValue((Double.class.getClassLoader())));
         this.lng = ((Double) in.readValue((Double.class.getClassLoader())));
     }
 
-    public Southwest() {
+    public Northeast() {
     }
 
     public Double getLat() {
