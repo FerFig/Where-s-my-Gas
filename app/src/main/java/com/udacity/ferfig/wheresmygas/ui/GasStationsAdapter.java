@@ -12,6 +12,7 @@ import com.udacity.ferfig.wheresmygas.R;
 import com.udacity.ferfig.wheresmygas.Utils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolder> {
@@ -20,31 +21,35 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     private final List<GasStation> mData;
 
+    private final ArrayList<GasStation> mFavoriteGasStations;
+
     public interface OnItemClickListener {
         void onItemClick(GasStation gasStationData);
-    }
-
-    public interface OnDirectionsClickListener {
-        void onDirectionsClick(GasStation gasStationData);
     }
 
     public interface OnFavoritesClickListener {
         void onFavoritesClick(GasStation gasStationData);
     }
 
+    public interface OnDirectionsClickListener {
+        void onDirectionsClick(GasStation gasStationData);
+    }
+
     private final OnItemClickListener itemClickListener;
-    private final OnDirectionsClickListener directionsClickListener;
     private final OnFavoritesClickListener favoritesClickListener;
+    private final OnDirectionsClickListener directionsClickListener;
 
     public GasStationsAdapter(Context context, List<GasStation> gasStationDataList,
+                              ArrayList<GasStation> favoriteGasStations,
                               OnItemClickListener gasStationClickListener,
                               OnFavoritesClickListener gasStationFavoritesClickListener,
                               OnDirectionsClickListener gasStationDirectionsClickListener) {
         this.mContext = context;
         this.mData = gasStationDataList;
+        this.mFavoriteGasStations = favoriteGasStations;
         this.itemClickListener = gasStationClickListener;
-        this.directionsClickListener = gasStationDirectionsClickListener;
         this.favoritesClickListener = gasStationFavoritesClickListener;
+        this.directionsClickListener = gasStationDirectionsClickListener;
     }
 
     @NonNull
@@ -59,7 +64,8 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     public void onBindViewHolder(@NonNull GasStationViewHolder holder, int position) {
         Log.d(Utils.TAG, "Gas Station: " + mData.get(position).getName() + " ( " + position + " = " + String.valueOf(getItemCount()-1) + " )");
         holder.bind(mData.get(position),
-                itemClickListener, directionsClickListener, favoritesClickListener);
+                itemClickListener, favoritesClickListener, directionsClickListener,
+                Utils.isFavoriteGasStation(mData.get(position).getId(), mFavoriteGasStations));
     }
 
     @Override

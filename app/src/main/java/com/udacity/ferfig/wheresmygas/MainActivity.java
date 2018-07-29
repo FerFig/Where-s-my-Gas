@@ -106,7 +106,6 @@ public class MainActivity extends AppCompatActivity
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
             mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
             mFavoriteGasStations = savedInstanceState.getParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS);
-            mFabActionSelectLocation.setTag(savedInstanceState.getString(Utils.STORE_FAB_STATE));
         }
 
         setContentView(R.layout.activity_main);
@@ -122,11 +121,13 @@ public class MainActivity extends AppCompatActivity
         fragmentMap.getMapAsync(this);
 
         if (savedInstanceState == null) {
-            // Initialize needed stuff
             mFabActionSelectLocation.setTag(Utils.FAB_STATE_PICK_LOCATION);
 
             // Retrieve favorite stations
             getDataFromLocalDB();
+        }
+        else{
+            mFabActionSelectLocation.setTag(savedInstanceState.getString(Utils.STORE_FAB_STATE));
         }
     }
 
@@ -337,7 +338,7 @@ public class MainActivity extends AppCompatActivity
                     .position(location)
                     .snippet(Utils.formatDistance(distance));
 
-            if (isFavotiteGasStation(gasStation.getId())) {
+            if (Utils.isFavoriteGasStation(gasStation.getId(), mFavoriteGasStations)) {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }
             else { // non favorite
@@ -387,8 +388,9 @@ public class MainActivity extends AppCompatActivity
 //        mErrorMessage.setVisibility(View.GONE);
 //        mMainRecyclerView.setVisibility(View.VISIBLE);
 
-        GasStationsAdapter maingasStationsAdapter = new GasStationsAdapter(this,
+        GasStationsAdapter mainGasStationsAdapter = new GasStationsAdapter(this,
                 gasStationList,
+                mFavoriteGasStations,
                 new GasStationsAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(GasStation gasStationData) {
@@ -408,7 +410,7 @@ public class MainActivity extends AppCompatActivity
                 new GasStationsAdapter.OnFavoritesClickListener() {
                     @Override
                     public void onFavoritesClick(GasStation gasStationData) {
-                        if (isFavotiteGasStation(gasStationData.getId())) {
+                        if (Utils.isFavoriteGasStation(gasStationData.getId(), mFavoriteGasStations)) {
                             removeFromFavorites(gasStationData);
                         } else {
                             addToFavorites(gasStationData);
@@ -434,7 +436,7 @@ public class MainActivity extends AppCompatActivity
                 OrientationHelper.VERTICAL,
                 false));
 
-        mRvNearbyPlaces.setAdapter(maingasStationsAdapter);
+        mRvNearbyPlaces.setAdapter(mainGasStationsAdapter);
     }
 
     /**
@@ -687,17 +689,6 @@ public class MainActivity extends AppCompatActivity
         else {
             getNearbyGasStations(false);
         }
-    }
-
-    private boolean isFavotiteGasStation(String gasStationId) {
-        if (mFavoriteGasStations != null){
-            for (GasStation gasStation:mFavoriteGasStations) {
-                if (gasStation.getId().equals(gasStationId)){
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private void addToFavorites(GasStation gasStation){

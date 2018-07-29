@@ -17,8 +17,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.udacity.ferfig.wheresmygas.model.GasStation;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
@@ -140,5 +142,16 @@ public class Utils {
             location.setLongitude(Utils.MAP_DEFAULT_LOCATION.longitude);
         }
         return location;
+    }
+
+    public static boolean isFavoriteGasStation(String gasStationId, ArrayList<GasStation> favoritesGasStations) {
+        if (favoritesGasStations != null){
+            for (GasStation gasStation:favoritesGasStations) {
+                if (gasStation.getId().equals(gasStationId)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

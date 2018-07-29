@@ -1,5 +1,6 @@
 package com.udacity.ferfig.wheresmygas.ui;
 
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -44,8 +45,9 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
 
     public void bind(final GasStation gasStationData,
                      final GasStationsAdapter.OnItemClickListener listener,
+                     final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener,
                      final GasStationsAdapter.OnDirectionsClickListener directionsClickListener,
-                     final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener) {
+                     final boolean favoriteGasStation) {
 
         String gasStationName = gasStationData.getName();
         String gasStationAddress = gasStationData.getAddress();
@@ -72,6 +74,11 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
+        if (favoriteGasStation) {
+            mImgButtonFavorites.setImageDrawable(ContextCompat.getDrawable(mImgButtonFavorites.getContext(), R.drawable.ic_favorite_on_24dp));
+        }else{
+            mImgButtonFavorites.setImageDrawable(ContextCompat.getDrawable(mImgButtonFavorites.getContext(), R.drawable.ic_favorite_off_24dp));
+        }
         mImgButtonFavorites.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 if (favoritesClickListener!=null) {
