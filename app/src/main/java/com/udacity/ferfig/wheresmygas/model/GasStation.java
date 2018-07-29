@@ -4,9 +4,12 @@ package com.udacity.ferfig.wheresmygas.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/* class to store favorite gas stations */
-public final class GasStation implements Parcelable {
+import com.udacity.ferfig.wheresmygas.model.maps.Result;
 
+/* class to store favorite gas stations */
+public class GasStation implements Parcelable {
+
+    private String mId;
     private String mName;
     private String mImageUrl;
     private Double mLatitude;
@@ -15,7 +18,8 @@ public final class GasStation implements Parcelable {
     private String mAddress;
     private Result mDetails;
 
-    public GasStation(String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, Result details) {
+    public GasStation(String id, String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, Result details) {
+        this.mId = id;
         this.mName = name;
         this.mImageUrl = imageUrl;
         this.mLatitude = latitude;
@@ -27,6 +31,7 @@ public final class GasStation implements Parcelable {
 
     /** Parcelable Stuff **/
     protected GasStation(Parcel in) {
+        mId = in.readString();
         mName = in.readString();
         mImageUrl = in.readString();
         mLatitude = in.readDouble();
@@ -55,6 +60,7 @@ public final class GasStation implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mId);
         dest.writeString(mName);
         dest.writeString(mImageUrl);
         dest.writeDouble(mLatitude);
@@ -65,6 +71,13 @@ public final class GasStation implements Parcelable {
     }
 
     /** getters and setters **/
+    public String getId() {
+        return mId;
+    }
+    public void setId(String id) {
+        this.mId = id;
+    }
+
     public String getName() {
         return mName;
     }

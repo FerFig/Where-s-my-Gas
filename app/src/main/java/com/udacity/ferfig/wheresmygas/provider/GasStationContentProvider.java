@@ -134,6 +134,11 @@ public class GasStationContentProvider extends ContentProvider {
         int gasStationsDeleted; // starts as 0
         switch (match) {
             // Handle the single item case, recognized by the ID included in the URI path
+            case GAS_STATION:
+                // Use selections/selectionArgs
+                gasStationsDeleted = db.delete(GasStationEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            // Handle the single item case, recognized by the ID included in the URI path
             case GAS_STATION_WITH_ID:
                 // Get the gas station ID from the URI path
                 String id = uri.getPathSegments().get(1);

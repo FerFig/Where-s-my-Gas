@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.udacity.ferfig.wheresmygas.model.GasStationTypeConverter;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.provider.GasStationContract.GasStationEntry;
 
@@ -32,12 +33,17 @@ public class GasStationsAsyncLoader extends GasStationsAsyncTaskLoader<ArrayList
                 if (cursor != null) {
                     while (cursor.moveToNext()) {
                         GasStation gasStation = new GasStation(
+                                cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_ID)),
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_NAME)),
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL)),
                                 cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LATITUDE)),
                                 cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE)),
                                 cursor.getFloat(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DISTANCE)),
-                                cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DETAILS)));
+                                cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_ADDRESS)),
+                                GasStationTypeConverter.stringToGasStationList(
+                                    cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DETAILS))
+                                )
+                        );
                         mAsyncGasStationList.add(gasStation);
                     }
                     cursor.close();

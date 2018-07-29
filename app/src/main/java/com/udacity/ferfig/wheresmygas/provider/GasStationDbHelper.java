@@ -10,7 +10,7 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
     // DB name & version
     private static final String DATABASE_NAME = "wheresmygas.db";
     // If database schema changed, must increment the database version
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     GasStationDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,6 +21,7 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
         // Create a table to hold the gas stations data
         final String SQL_CREATE_TABLE = "CREATE TABLE " + GasStationEntry.TABLE_NAME + " (" +
                 GasStationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                GasStationEntry.COLUMN_GAS_STATION_ID + " TEXT NOT NULL, " +
                 GasStationEntry.COLUMN_GAS_STATION_NAME + " TEXT NOT NULL, " +
                 GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL + " TEXT, " +
                 GasStationEntry.COLUMN_GAS_STATION_LATITUDE + " REAL NOT NULL, " +

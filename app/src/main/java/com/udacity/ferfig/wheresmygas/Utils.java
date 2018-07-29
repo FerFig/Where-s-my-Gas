@@ -34,6 +34,10 @@ public class Utils {
     public static final String STORE_GAS_STATIONS = "wmg_gas_stations";
     public static final String STORE_LAST_PICKED_LOCATION = "wmg_last_picked_location";
     public static final String STORE_FAVORITE_GAS_STATIONS = "wmg_favorites";
+    public static final String STORE_FAB_STATE = "wmg_fab_state";
+
+    public static final String FAB_STATE_PICK_LOCATION = "wmg_fab_pick_location";
+    public static final Object FAB_STATE_REFRESH = "wmg_fab_refresh";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
     private static final LatLng MAP_DEFAULT_LOCATION = new LatLng(38.736946, -9.142685); //Portugal - Lisbon location

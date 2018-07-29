@@ -12,6 +12,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -39,10 +41,11 @@ import com.udacity.ferfig.wheresmygas.Api.ClientConfig;
 import com.udacity.ferfig.wheresmygas.Api.RetrofitClient;
 import com.udacity.ferfig.wheresmygas.Utils.SnackBarActions;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
-import com.udacity.ferfig.wheresmygas.model.GasStationsList;
-import com.udacity.ferfig.wheresmygas.model.Result;
+import com.udacity.ferfig.wheresmygas.model.maps.GasStationsList;
+import com.udacity.ferfig.wheresmygas.model.maps.Result;
 import com.udacity.ferfig.wheresmygas.provider.DbUtils;
 import com.udacity.ferfig.wheresmygas.provider.GasStationsAsyncLoader;
+import com.udacity.ferfig.wheresmygas.ui.GasStationsAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,10 +68,6 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_PICK_LOCATION_RESULT = 63;
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
-
-//    The entry points to the Places API.
-//    private GeoDataClient mGeoDataClient;
-//    private PlaceDetectionClient mPlaceDetectionClient;
 
     private boolean mLocationPermissionGranted;
 
@@ -107,6 +106,7 @@ public class MainActivity extends AppCompatActivity
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
             mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
             mFavoriteGasStations = savedInstanceState.getParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS);
+            mFabActionSelectLocation.setTag(savedInstanceState.getString(Utils.STORE_FAB_STATE));
         }
 
         setContentView(R.layout.activity_main);
@@ -121,8 +121,11 @@ public class MainActivity extends AppCompatActivity
                 .findFragmentById(R.id.fragmentMap);
         fragmentMap.getMapAsync(this);
 
-        // Retrieve favorite stations
         if (savedInstanceState == null) {
+            // Initialize needed stuff
+            mFabActionSelectLocation.setTag(Utils.FAB_STATE_PICK_LOCATION);
+
+            // Retrieve favorite stations
             getDataFromLocalDB();
         }
     }
@@ -137,6 +140,7 @@ public class MainActivity extends AppCompatActivity
             outState.putParcelable(Utils.STORE_GAS_STATIONS, mGasStationsList);
             outState.putParcelable(Utils.STORE_LAST_PICKED_LOCATION, mLastPickedLocation);
             outState.putParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS, mFavoriteGasStations);
+            outState.putString(Utils.STORE_FAB_STATE, String.valueOf(mFabActionSelectLocation.getTag()));
         }
         super.onSaveInstanceState(outState);
     }
@@ -146,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         //TODO: implement all snackbar actions
         switch (action) {
             case RETRY_CONNECTION:
-
+                onMapReady(mMap);
                 break;
             case REQUEST_PERMISSIONS:
                 Utils.requestLocationPermission(this);
@@ -301,6 +305,9 @@ public class MainActivity extends AppCompatActivity
                     mLastKnowDeviceLocation.getLongitude()));
         }
 
+        // Store GasStations list to show in recycle view adapter
+        List<GasStation> gasStationList = new ArrayList<>();
+
         for (Result gasStation : gasStationListResult) {
             float distance;
             Double gasLat = gasStation.getGeometry().getLocation().getLat();
@@ -311,7 +318,17 @@ public class MainActivity extends AppCompatActivity
             gasLocation.setLongitude(gasLon);
             distance = gasLocation.distanceTo(mLastKnowDeviceLocation); // meters
 
-            Log.d(Utils.TAG, "Gas Station: " + gasStation.getName() + " " + distance + "m");
+            String gasStationImageUrl;
+//TODO add gas station images... if time permits
+//            List<Photo> gasStationPhotos = gasStation.getPhotos();
+//            if (gasStationPhotos.size()>0){
+//                gasStationImageUrl = ClientConfig.BASE_URL.concat(
+//                        "/maps/api/place/photo?maxwidth=200&photoreference=").concat(
+//                        gasStationPhotos.get(0).getPhotoReference()).concat("&key=")
+//                        .concat(getString(R.string.google_api_key));
+//            }else {
+                gasStationImageUrl = gasStation.getIcon();
+//            }
 
             LatLng location = new LatLng(gasLat, gasLon);
 
@@ -320,11 +337,7 @@ public class MainActivity extends AppCompatActivity
                     .position(location)
                     .snippet(Utils.formatDistance(distance));
 
-// TODO save favorites to DB using the content provider
-//            DbUtils.addGasStationToDB(this,
-//                    new GasStation(gasStation.getName(), gasLat, gasLon, gasStation.getPlaceId()));
-
-            if (isFavotiteGasStation(gasStation.getName())) {
+            if (isFavotiteGasStation(gasStation.getId())) {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }
             else { // non favorite
@@ -344,13 +357,84 @@ public class MainActivity extends AppCompatActivity
             markersBounds.include(markerOptions.getPosition());
 
             mMap.addMarker(markerOptions);
+
+            gasStationList.add(new GasStation(
+                    gasStation.getId(),
+                    gasStation.getName(),
+                    gasStationImageUrl,
+                    gasLat,
+                    gasLon,
+                    distance,
+                    gasStation.getVicinity(),
+                    gasStation));
         }
 
         LatLngBounds allBounds = markersBounds.build();
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(allBounds, 60); //TODO: add (padding) to preferences?!
         //mMap.moveCamera(cameraUpdate);
         mMap.animateCamera(cameraUpdate);
-//      setMainRecipAdapter(mRecipList);
+
+        addStationsToRecyclerView(gasStationList);
+
+        if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_REFRESH)) {
+            mFabActionSelectLocation.setImageResource(R.drawable.ic_place_24dp);
+            mFabActionSelectLocation.setTag(Utils.FAB_STATE_PICK_LOCATION);
+        }
+    }
+
+    private void addStationsToRecyclerView(List<GasStation> gasStationList) {
+//        mProgressBar.setVisibility(View.GONE);
+//        mErrorMessage.setVisibility(View.GONE);
+//        mMainRecyclerView.setVisibility(View.VISIBLE);
+
+        GasStationsAdapter maingasStationsAdapter = new GasStationsAdapter(this,
+                gasStationList,
+                new GasStationsAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(GasStation gasStationData) {
+//                        //prepare the intent to call detail activity
+//                        Intent mDetailIntent = new Intent(getApplicationContext(), mDetails.class);
+//                        //And send it to the detail activity
+//                        mDetailIntent.putExtra(Utils.SINGLE_DETAILS_OBJECT, mData);
+//                        startActivityForResult(mDetailIntent, ID_FOR_ACTIVITY_RESULT);
+                        Utils.showSnackBar(findViewById(android.R.id.content),
+                                "Clicked: " + gasStationData.getName(),
+                                null,
+                                Snackbar.LENGTH_SHORT,
+                                null,
+                                null);
+                    }
+                },
+                new GasStationsAdapter.OnFavoritesClickListener() {
+                    @Override
+                    public void onFavoritesClick(GasStation gasStationData) {
+                        if (isFavotiteGasStation(gasStationData.getId())) {
+                            removeFromFavorites(gasStationData);
+                        } else {
+                            addToFavorites(gasStationData);
+                        }
+                    }
+                },
+                new GasStationsAdapter.OnDirectionsClickListener() {
+                    @Override
+                    public void onDirectionsClick(GasStation gasStationData) {
+                        Utils.showSnackBar(findViewById(android.R.id.content),
+                                "Directions to: " + gasStationData.getName(),
+                                null,
+                                Snackbar.LENGTH_SHORT,
+                                null,
+                                null);
+                    }
+                }
+        );
+
+        mRvNearbyPlaces.setLayoutManager(new GridLayoutManager(
+                this,
+                1,
+                OrientationHelper.VERTICAL,
+                false));
+
+        mRvNearbyPlaces.setAdapter(maingasStationsAdapter);
     }
 
     /**
@@ -509,7 +593,17 @@ public class MainActivity extends AppCompatActivity
                     currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
                     if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius ==0?Utils.MAP_DEFAULT_SEARCH_RADIUS: mSearchAreaRadius)) {
                         mSearchLocation = currentLocation;
-                        getNearbyGasStations(false);
+                        //getNearbyGasStations(false);
+                    }
+                }
+            });
+
+            mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+                @Override
+                public void onCameraMoveStarted(int i) {
+                    if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_PICK_LOCATION)) {
+                        mFabActionSelectLocation.setImageResource(R.drawable.ic_sync_24dp);
+                        mFabActionSelectLocation.setTag(Utils.FAB_STATE_REFRESH);
                     }
                 }
             });
@@ -565,39 +659,77 @@ public class MainActivity extends AppCompatActivity
 
     @OnClick({R.id.fabActionSelectLocation})
     public void fabClick(View view) {
-        if (Utils.hasLocationPermission(this)) {
-            try {
-                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                Intent intent = builder.build(this);
+        if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_PICK_LOCATION)) {
+            if (Utils.hasLocationPermission(this)) {
+                try {
+                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                    Intent intent = builder.build(this);
 
-                if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
+                    if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
 
-                startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
-            } catch (GooglePlayServicesRepairableException e) {
-                Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
-            } catch (GooglePlayServicesNotAvailableException e) {
-                Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
-            } catch (Exception e) {
-                Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
+                    startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
+                } catch (GooglePlayServicesRepairableException e) {
+                    Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
+                } catch (Exception e) {
+                    Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
+                }
+            } else {
+                Utils.showSnackBar(findViewById(android.R.id.content),
+                        getString(R.string.sb_text_retry_permissions_message),
+                        getString(R.string.snackbar_action_permissions_request),
+                        Snackbar.LENGTH_INDEFINITE,
+                        MainActivity.this,
+                        SnackBarActions.REQUEST_PERMISSIONS);
             }
         }
         else {
-            Utils.showSnackBar(findViewById(android.R.id.content),
-                    getString(R.string.sb_text_retry_permissions_message),
-                    getString(R.string.snackbar_action_permissions_request),
-                    Snackbar.LENGTH_INDEFINITE,
-                    MainActivity.this,
-                    SnackBarActions.REQUEST_PERMISSIONS);
+            getNearbyGasStations(false);
         }
     }
 
-    private boolean isFavotiteGasStation(String gasStationName) {
-        for (GasStation gasStation:mFavoriteGasStations) {
-            if (gasStation.getName().equals(gasStationName)){
-                return true;
+    private boolean isFavotiteGasStation(String gasStationId) {
+        if (mFavoriteGasStations != null){
+            for (GasStation gasStation:mFavoriteGasStations) {
+                if (gasStation.getId().equals(gasStationId)){
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    private void addToFavorites(GasStation gasStation){
+        mFavoriteGasStations.add(gasStation);
+
+        // save favorites to DB using the content provider
+        DbUtils.addGasStationToDB(getApplicationContext(), gasStation);
+
+        Utils.showSnackBar(findViewById(android.R.id.content),
+                gasStation.getName() + " added to favorites",
+                null,
+                Snackbar.LENGTH_SHORT,
+                null,
+                null);
+    }
+
+    private void removeFromFavorites(GasStation gasStation) {
+        for (int i = 0; i < mFavoriteGasStations.size(); i++)
+            if (mFavoriteGasStations.get(i).getId().equals(gasStation.getId())) {
+                mFavoriteGasStations.remove(i);
+                break;
+            }
+
+        // delete favorites from DB using the content provider
+        DbUtils.deleteGasStationFromDB(getApplicationContext(), gasStation);
+
+        Utils.showSnackBar(findViewById(android.R.id.content),
+                gasStation.getName() + " removed from favorites",
+                null,
+                Snackbar.LENGTH_SHORT,
+                null,
+                null);
     }
 
     private void getDataFromLocalDB() {
@@ -606,12 +738,10 @@ public class MainActivity extends AppCompatActivity
 
         Bundle bundleForLoader = new Bundle();
 
-        Loader<String> moviesLoaderFromLocalDB = getSupportLoaderManager().getLoader(GasStationsAsyncLoader.LOADER_ID);
-        if (moviesLoaderFromLocalDB!=null){
-            Log.w(Utils.TAG, "MainActivity: getDataFromLocalDB: restartLoader");
+        Loader<String> gasStationLoaderFromLocalDB = getSupportLoaderManager().getLoader(GasStationsAsyncLoader.LOADER_ID);
+        if (gasStationLoaderFromLocalDB!=null){
             getSupportLoaderManager().restartLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
         }else {
-            Log.w(Utils.TAG, "MainActivity: getDataFromLocalDB: initLoader");
             getSupportLoaderManager().initLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
         }
     }
@@ -631,9 +761,6 @@ public class MainActivity extends AppCompatActivity
         if (null != data) {
             mFavoriteGasStations = data;
         }
-//        else {
-//            showErrorMessage(R.string.error_message_text);
-//        }
     }
 
     @Override
