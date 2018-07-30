@@ -216,10 +216,7 @@ public class MainActivity extends AppCompatActivity
                     if (place == null) {
                         Utils.showSnackBar(findViewById(android.R.id.content),
                                 getString(R.string.sb_text_no_place_selected),
-                                null,
-                                Snackbar.LENGTH_SHORT,
-                                null,
-                                null);
+                                Snackbar.LENGTH_SHORT);
                     }
                     else {
                         mSearchLocation = new Location(LocationManager.GPS_PROVIDER);
@@ -234,10 +231,7 @@ public class MainActivity extends AppCompatActivity
                 else{
                     Utils.showSnackBar(findViewById(android.R.id.content),
                             getString(R.string.sb_text_place_picker_cancelled),
-                            null,
-                            Snackbar.LENGTH_SHORT,
-                            null,
-                            null);
+                            Snackbar.LENGTH_SHORT);
                 }
                 break;
         }
@@ -462,17 +456,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addStationsToRecyclerView(List<GasStation> gasStationList) {
-//        mProgressBar.setVisibility(View.GONE);
-//        mErrorMessage.setVisibility(View.GONE);
-//        mMainRecyclerView.setVisibility(View.VISIBLE);
-
         GasStationsAdapter mainGasStationsAdapter = new GasStationsAdapter(this,
                 gasStationList,
                 mFavoriteGasStations,
                 new GasStationsAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(GasStation gasStationData) {
-                        for (Marker marker:mMarkers) {
+                        for (Marker marker : mMarkers) {
                             if (marker.getTag() == gasStationData.getId()) {
                                 marker.showInfoWindow();
                                 mMap.animateCamera(CameraUpdateFactory.newLatLng(
@@ -496,9 +486,19 @@ public class MainActivity extends AppCompatActivity
                 new GasStationsAdapter.OnDirectionsClickListener() {
                     @Override
                     public void onDirectionsClick(GasStation gasStationData) {
-                        Intent mDirectionsIntent = Utils.buildDirectionsToIntent(gasStationData);
+                        Intent mDirectionsIntent = Utils.buildDirectionsToIntent(gasStationData,
+                                true); // try to open turn by turn in google maps -- for Google credits ;)
                         if (mDirectionsIntent.resolveActivity(getPackageManager()) != null) {
                             startActivity(mDirectionsIntent);
+                        } else { // try to open turn by turn in other app if possible...
+                            mDirectionsIntent = Utils.buildDirectionsToIntent(gasStationData, false);
+                            if (mDirectionsIntent.resolveActivity(getPackageManager()) != null) {
+                                startActivity(mDirectionsIntent);
+                            } else {
+                                Utils.showSnackBar(findViewById(android.R.id.content),
+                                        getString(R.string.sb_text_navigation_is_not_possible),
+                                        Snackbar.LENGTH_LONG);
+                            }
                         }
                     }
                 }
@@ -766,10 +766,7 @@ public class MainActivity extends AppCompatActivity
                 if (!activityStarted){
                     Utils.showSnackBar(findViewById(android.R.id.content),
                             getString(R.string.sb_text_google_play_services_error),
-                            null,
-                            Snackbar.LENGTH_LONG,
-                            null,
-                            null);
+                            Snackbar.LENGTH_LONG);
                 }
             }
         } else {

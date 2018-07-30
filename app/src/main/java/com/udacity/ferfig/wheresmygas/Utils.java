@@ -30,8 +30,6 @@ public class Utils {
 
     public static final String TAG = "Where's my Gas";
 
-    private static final String BASE_GOOGLE_DIRECTIONS_URL = "https://www.google.com/maps/dir/?api=1";
-
     // Keys to store activity state
     public static final String STORE_LAST_KNOW_LOCATION = "wmg_last_know_location";
     public static final String STORE_SEARCH_AREA_RADIUS = "wmg_search_radius";
@@ -58,7 +56,7 @@ public class Utils {
         if (cm != null) {
             ni = cm.getActiveNetworkInfo();
         }
-        return ni != null && ni.isConnected();
+        return (ni == null || !ni.isConnected());
     }
 
     public static boolean isLocationServiceActive(Context context) {
@@ -67,6 +65,18 @@ public class Utils {
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                         || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         );
+    }
+
+    public static void showSnackBar(View container, String message, int duration) {
+        Snackbar snackbar = Snackbar
+                .make(container, message, duration);
+
+        snackbar.setActionTextColor(Color.RED);
+
+        View sbView = snackbar.getView();
+        TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(Color.YELLOW);
+        snackbar.show();
     }
 
     public static void showSnackBar(View container, String message, String actionText, int duration,
@@ -101,19 +111,34 @@ public class Utils {
         return stringBuilder.toString();
     }
 
-    public static Intent buildDirectionsToIntent(GasStation gasStationData) {
+    public static Intent buildDirectionsToIntent(GasStation gasStationData, boolean withGoogleMaps ) {
         // Prepare the intent to call navigation to Gas Station
-        Uri directionsUri = Uri.parse(BASE_GOOGLE_DIRECTIONS_URL)
-                .buildUpon()
-                .appendQueryParameter("travelmode", "driving")
-                .appendQueryParameter("destination_place_id", gasStationData.getId())
-                .appendQueryParameter("destination", // required parameter
-                        String.valueOf(gasStationData.getLatitude())
-                                .concat(",")
-                                .concat(String.valueOf(gasStationData.getLongitude())))
-                .appendQueryParameter("dir_action", "navigate") // start navigation immediately
-                .build();
-        return new Intent(Intent.ACTION_VIEW, directionsUri);
+
+//        // With Maps URLs universal cross-platform
+//        final String BASE_GOOGLE_DIRECTIONS_URL = "https://www.google.com/maps/dir/?api=1";
+//        Uri directionsUri = Uri.parse(BASE_GOOGLE_DIRECTIONS_URL)
+//                .buildUpon()
+//                .appendQueryParameter("travelmode", "driving")
+//                .appendQueryParameter("destination_place_id", gasStationData.getId())
+//                .appendQueryParameter("destination", // required parameter
+//                        String.valueOf(gasStationData.getLatitude())
+//                                .concat(",")
+//                                .concat(String.valueOf(gasStationData.getLongitude())))
+//                .appendQueryParameter("dir_action", "navigate") // start navigation immediately
+//                .build();
+
+        // With Google Maps Intents for Android
+        final String BASE_GOOGLE_NAVIGATION_URL = "google.navigation:q=%1$s,%2$s&mode=d";
+        Uri directionsUri = Uri.parse(
+                String.format(BASE_GOOGLE_NAVIGATION_URL,
+                        gasStationData.getLatitude(),
+                        gasStationData.getLongitude()));
+
+        Intent directionsIntent = new Intent(Intent.ACTION_VIEW, directionsUri);
+        if (withGoogleMaps) {
+            directionsIntent.setPackage("com.google.android.apps.maps");
+        }
+        return directionsIntent;
     }
 
     public enum SnackBarActions {
