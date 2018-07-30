@@ -2,6 +2,7 @@ package com.udacity.ferfig.wheresmygas;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -9,6 +10,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,6 +29,8 @@ import static android.content.Context.CONNECTIVITY_SERVICE;
 public class Utils {
 
     public static final String TAG = "Where's my Gas";
+
+    private static final String BASE_GOOGLE_DIRECTIONS_URL = "https://www.google.com/maps/dir/?api=1";
 
     // Keys to store activity state
     public static final String STORE_LAST_KNOW_LOCATION = "wmg_last_know_location";
@@ -48,7 +52,7 @@ public class Utils {
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
-    public static boolean isInternetAvailable(Context context) {
+    public static boolean noInternetIsAvailable(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo ni = null;
         if (cm != null) {
@@ -59,8 +63,10 @@ public class Utils {
 
     public static boolean isLocationServiceActive(Context context) {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return locationManager != null && (
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                        || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        );
     }
 
     public static void showSnackBar(View container, String message, String actionText, int duration,
@@ -93,6 +99,21 @@ public class Utils {
             stringBuilder.append("km");
         }
         return stringBuilder.toString();
+    }
+
+    public static Intent buildDirectionsToIntent(GasStation gasStationData) {
+        // Prepare the intent to call navigation to Gas Station
+        Uri directionsUri = Uri.parse(BASE_GOOGLE_DIRECTIONS_URL)
+                .buildUpon()
+                .appendQueryParameter("travelmode", "driving")
+                .appendQueryParameter("destination_place_id", gasStationData.getId())
+                .appendQueryParameter("destination", // required parameter
+                        String.valueOf(gasStationData.getLatitude())
+                                .concat(",")
+                                .concat(String.valueOf(gasStationData.getLongitude())))
+                .appendQueryParameter("dir_action", "navigate") // start navigation immediately
+                .build();
+        return new Intent(Intent.ACTION_VIEW, directionsUri);
     }
 
     public enum SnackBarActions {

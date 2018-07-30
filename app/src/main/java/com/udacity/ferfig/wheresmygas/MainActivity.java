@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRefresh() {
-        if (!Utils.isInternetAvailable(getApplicationContext())) {
+        if (Utils.noInternetIsAvailable(getApplicationContext())) {
             Utils.showSnackBar(findViewById(android.R.id.content),
                     getString(R.string.sb_text_no_internet_connectivity),
                     getString(R.string.snackbar_action_retry),
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getNearbyGasStations(boolean bSearchWiderArea){
-        if (!Utils.isInternetAvailable(getApplicationContext())) {
+        if (Utils.noInternetIsAvailable(getApplicationContext())) {
             UpdateRefreshingUi();
 
             Utils.showSnackBar(findViewById(android.R.id.content),
@@ -496,17 +496,10 @@ public class MainActivity extends AppCompatActivity
                 new GasStationsAdapter.OnDirectionsClickListener() {
                     @Override
                     public void onDirectionsClick(GasStation gasStationData) {
-//                        //prepare the intent to call detail activity
-//                        Intent mDetailIntent = new Intent(getApplicationContext(), mDetails.class);
-//                        //And send it to the detail activity
-//                        mDetailIntent.putExtra(Utils.SINGLE_DETAILS_OBJECT, mData);
-//                        startActivityForResult(mDetailIntent, ID_FOR_ACTIVITY_RESULT);
-                        Utils.showSnackBar(findViewById(android.R.id.content),
-                                "Directions to: " + gasStationData.getName(),
-                                null,
-                                Snackbar.LENGTH_SHORT,
-                                null,
-                                null);
+                        Intent mDirectionsIntent = Utils.buildDirectionsToIntent(gasStationData);
+                        if (mDirectionsIntent.resolveActivity(getPackageManager()) != null) {
+                            startActivity(mDirectionsIntent);
+                        }
                     }
                 }
         );
@@ -567,7 +560,7 @@ public class MainActivity extends AppCompatActivity
         }
         else{
             // Check if internet is available...
-            if (!Utils.isInternetAvailable(this)) {
+            if (Utils.noInternetIsAvailable(this)) {
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_no_internet_connectivity),
                         getString(R.string.snackbar_action_retry),
