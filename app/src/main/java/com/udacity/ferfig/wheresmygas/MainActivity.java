@@ -13,11 +13,12 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -94,6 +95,9 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSrlNearbyPlaces;
 
+    @BindView(R.id.tvSwipeRefreshMsg)
+    TextView mTvSwipeRefreshMsg;
+
     @BindView(R.id.fabActionSelectLocation)
     FloatingActionButton mFabActionSelectLocation;
 
@@ -104,6 +108,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        boolean isSwipeMsgVisible = false;
         if (savedInstanceState != null) {
             mLastKnowDeviceLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_KNOW_LOCATION);
             mSearchAreaRadius = savedInstanceState.getLong(Utils.STORE_SEARCH_AREA_RADIUS);
@@ -112,6 +117,7 @@ public class MainActivity extends AppCompatActivity
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
             mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
             mFavoriteGasStations = savedInstanceState.getParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS);
+            isSwipeMsgVisible = savedInstanceState.getBoolean(Utils.STORE_SWIPE_MSG_VISIBILITY, false);
         }
 
         setContentView(R.layout.activity_main);
@@ -129,13 +135,13 @@ public class MainActivity extends AppCompatActivity
         fragmentMap.getMapAsync(this);
 
         if (savedInstanceState == null) {
-            mFabActionSelectLocation.setTag(Utils.FAB_STATE_PICK_LOCATION);
-
             // Retrieve favorite stations
             getDataFromLocalDB();
         }
         else{
-            mFabActionSelectLocation.setTag(savedInstanceState.getString(Utils.STORE_FAB_STATE));
+            if (isSwipeMsgVisible) {
+                mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -149,7 +155,8 @@ public class MainActivity extends AppCompatActivity
             outState.putParcelable(Utils.STORE_GAS_STATIONS, mGasStationsList);
             outState.putParcelable(Utils.STORE_LAST_PICKED_LOCATION, mLastPickedLocation);
             outState.putParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS, mFavoriteGasStations);
-            outState.putString(Utils.STORE_FAB_STATE, String.valueOf(mFabActionSelectLocation.getTag()));
+            outState.putBoolean(Utils.STORE_SWIPE_MSG_VISIBILITY,
+                    mTvSwipeRefreshMsg.getVisibility()==View.VISIBLE);
         }
         super.onSaveInstanceState(outState);
     }
@@ -174,11 +181,11 @@ public class MainActivity extends AppCompatActivity
                 getNearbyGasStations(true);
                 break;
             case SELECT_LOCATION:
-                UpdateRefreshingUi();
+                updateRefreshingUi();
                 selectLocation();
                 break;
             case REQUEST_LOCATION_ACTIVATION:
-                UpdateRefreshingUi();
+                updateRefreshingUi();
                 startActivityForResult(
                         new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS),
                         REQUEST_ACTIVATION_RESULT);
@@ -195,6 +202,18 @@ public class MainActivity extends AppCompatActivity
                     MainActivity.this,
                     SnackBarActions.RETRY_CONNECTION_REFRESH);
             return;
+        }
+
+        if (!Utils.userHasRefreshed(getApplicationContext())) {
+            //only show refresh textview the first time
+            Utils.setUserHasRefreshed(getApplicationContext());
+
+            if (Utils.isDeviceInLandscape(this)) {
+                mTvSwipeRefreshMsg.setVisibility(View.GONE);
+            }
+            else{
+                mTvSwipeRefreshMsg.setVisibility(View.INVISIBLE);
+            }
         }
 
         mIsRefreshing = true;
@@ -239,7 +258,7 @@ public class MainActivity extends AppCompatActivity
 
     private void getNearbyGasStations(boolean bSearchWiderArea){
         if (Utils.noInternetIsAvailable(getApplicationContext())) {
-            UpdateRefreshingUi();
+            updateRefreshingUi();
 
             Utils.showSnackBar(findViewById(android.R.id.content),
                     getString(R.string.sb_text_no_internet_connectivity),
@@ -256,7 +275,7 @@ public class MainActivity extends AppCompatActivity
 
             // ...if we still cant get the last location prompt the user to select one
             if (mSearchLocation == null){
-                UpdateRefreshingUi();
+                updateRefreshingUi();
 
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_unknown_location),
@@ -292,7 +311,7 @@ public class MainActivity extends AppCompatActivity
         gasStationsCall.enqueue(new Callback<GasStationsList>() {
             @Override
             public void onResponse(@NonNull Call<GasStationsList> call, @NonNull Response<GasStationsList> response) {
-                UpdateRefreshingUi();
+                updateRefreshingUi();
 
                 if (response.code() == 200) {
                     GasStationsList gasStationsList = response.body();
@@ -312,7 +331,7 @@ public class MainActivity extends AppCompatActivity
                         if (gasStationListResult.size() > 0) {
 
                             mGasStationsList = gasStationsList;
-                            addStationsToMap(mGasStationsList.getResults());
+                            addStationsToMap(mGasStationsList.getResults(), true);
 
                         }
                         else {//gasStationsList.size()) == 0
@@ -345,7 +364,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onFailure(@NonNull Call<GasStationsList> call, @NonNull Throwable t) {
-                UpdateRefreshingUi();
+                updateRefreshingUi();
 
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_error_failed_network_request),
@@ -357,14 +376,14 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void UpdateRefreshingUi() {
+    private void updateRefreshingUi() {
         if (mIsRefreshing) {
             mIsRefreshing = false;
             mSrlNearbyPlaces.setRefreshing(false);
         }
     }
 
-    private void addStationsToMap(List<Result> gasStationListResult) {
+    private void addStationsToMap(List<Result> gasStationListResult, boolean bFocusStations) {
         mMap.clear(); //remove any previous added marker...
         mMarkers.clear();
 
@@ -408,27 +427,13 @@ public class MainActivity extends AppCompatActivity
                     .position(location)
                     .snippet(Utils.formatDistance(distance));
 
-            if (Utils.isFavoriteGasStation(gasStation.getId(), mFavoriteGasStations)) {
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-            }
-            else { // non favorite
-                if (gasStation.getOpeningHours() != null) {
-                    if (gasStation.getOpeningHours().getOpenNow()) {
-                        // open now
-                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    } else {
-                        // not opened = show in different color
-                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
-                    }
-                } else { // unknow if it's open or not! show dimmed/different color...
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-                }
-            }
-
             markersBounds.include(markerOptions.getPosition());
 
             Marker newMarker = mMap.addMarker(markerOptions);
-            newMarker.setTag(gasStation.getId());
+            newMarker.setTag(gasStation);
+
+            updateMarkerUi(newMarker);
+
             mMarkers.add(newMarker);
 
             gasStationList.add(new GasStation(
@@ -442,17 +447,15 @@ public class MainActivity extends AppCompatActivity
                     gasStation));
         }
 
-        LatLngBounds allBounds = markersBounds.build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(allBounds, 60); //TODO: add (padding) to preferences?!
-        //mMap.moveCamera(cameraUpdate);
-        mMap.animateCamera(cameraUpdate);
+        // when from savedInstanceState keep the camera at that position
+        if (bFocusStations) {
+            LatLngBounds allBounds = markersBounds.build();
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(allBounds, 80);
+            //mMap.moveCamera(cameraUpdate);
+            mMap.animateCamera(cameraUpdate);
+        }
 
         addStationsToRecyclerView(gasStationList);
-
-        if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_REFRESH)) {
-            mFabActionSelectLocation.setImageResource(R.drawable.ic_place_24dp);
-            mFabActionSelectLocation.setTag(Utils.FAB_STATE_PICK_LOCATION);
-        }
     }
 
     private void addStationsToRecyclerView(List<GasStation> gasStationList) {
@@ -463,11 +466,14 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onItemClick(GasStation gasStationData) {
                         for (Marker marker : mMarkers) {
-                            if (marker.getTag() == gasStationData.getId()) {
-                                marker.showInfoWindow();
-                                mMap.animateCamera(CameraUpdateFactory.newLatLng(
-                                        marker.getPosition()));
-                                break;
+                            Result gasStation = (Result)marker.getTag();
+                            if (gasStation!=null){
+                                if (gasStation.getId().equals(gasStationData.getId())) {
+                                    marker.showInfoWindow();
+                                    mMap.animateCamera(CameraUpdateFactory.newLatLng(
+                                            marker.getPosition()));
+                                    break;
+                                }
                             }
                         }
 
@@ -481,6 +487,8 @@ public class MainActivity extends AppCompatActivity
                         } else {
                             addToFavorites(gasStationData);
                         }
+                        // refresh UI
+                        refreshFavoritesUi();
                     }
                 },
                 new GasStationsAdapter.OnDirectionsClickListener() {
@@ -504,13 +512,42 @@ public class MainActivity extends AppCompatActivity
                 }
         );
 
-        mRvNearbyPlaces.setLayoutManager(new GridLayoutManager(
+        mRvNearbyPlaces.setLayoutManager(new LinearLayoutManager(
                 this,
-                1,
                 OrientationHelper.VERTICAL,
                 false));
 
         mRvNearbyPlaces.setAdapter(mainGasStationsAdapter);
+    }
+
+    private void refreshFavoritesUi() {
+        // refresh markers on map
+        for (Marker marker:mMarkers) {
+            updateMarkerUi(marker);
+        }
+        // force refresh of recycler view layout
+        mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
+    }
+
+    private void updateMarkerUi(Marker marker) {
+        Result gasStation = (Result) marker.getTag();
+        if (gasStation != null) {
+            if (Utils.isFavoriteGasStation(gasStation.getId(), mFavoriteGasStations)) {
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+            } else { // non favorite
+                if (gasStation.getOpeningHours() != null) {
+                    if (gasStation.getOpeningHours().getOpenNow()) {
+                        // open now
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    } else {
+                        // not opened = show in different color
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                    }
+                } else { // unknow if it's open or not! show dimmed/different color...
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                }
+            }
+        }
     }
 
     /**
@@ -519,7 +556,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        UpdateRefreshingUi();
+        updateRefreshingUi();
 
         mMap = googleMap;
 
@@ -620,10 +657,8 @@ public class MainActivity extends AppCompatActivity
         }
         else{
             //restoring from SavedInstanceState...
-
-            //mMap.moveCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
             if (mGasStationsList!=null && mGasStationsList.getResults() !=null && mGasStationsList.getResults().size()>0) {
-                addStationsToMap(mGasStationsList.getResults());
+                addStationsToMap(mGasStationsList.getResults(), false);
             }
             else {
                 getNearbyGasStations(false);
@@ -671,18 +706,33 @@ public class MainActivity extends AppCompatActivity
                     currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
                     if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius ==0?Utils.MAP_DEFAULT_SEARCH_RADIUS: mSearchAreaRadius)) {
                         mSearchLocation = currentLocation;
-                        //getNearbyGasStations(false);
+
+                        if (!Utils.userHasRefreshed(getApplicationContext())) {
+                            mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
             });
 
-            mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                 @Override
-                public void onCameraMoveStarted(int i) {
-                    if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_PICK_LOCATION)) {
-                        mFabActionSelectLocation.setImageResource(R.drawable.ic_sync_24dp);
-                        mFabActionSelectLocation.setTag(Utils.FAB_STATE_REFRESH);
+                public boolean onMarkerClick(Marker marker) {
+                    Result gasStationData = (Result) marker.getTag();
+                    if (gasStationData != null) {
+                        // make sure that the corresponding item is visible in recycler view
+                        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
+                        GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
+                        List<GasStation> gasStationInAdapter = gasStationAdapter.getData();
+                        int position = 0;
+                        for (GasStation adapterGasStation : gasStationInAdapter) {
+                            if (adapterGasStation.getId().equals(gasStationData.getId())) {
+                                linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, null, position);
+                                break;
+                            }
+                            position++;
+                        }
                     }
+                    return false;
                 }
             });
         } catch (SecurityException e)  {
@@ -737,12 +787,7 @@ public class MainActivity extends AppCompatActivity
 
     @OnClick({R.id.fabActionSelectLocation})
     public void fabClick(View view) {
-        if (mFabActionSelectLocation.getTag().equals(Utils.FAB_STATE_PICK_LOCATION)) {
-            selectLocation();
-        }
-        else {
-            getNearbyGasStations(false);
-        }
+        selectLocation();
     }
 
     private void selectLocation() {
@@ -783,8 +828,6 @@ public class MainActivity extends AppCompatActivity
         // save favorites to DB using the content provider
         if (DbUtils.addGasStationToDB(getApplicationContext(), gasStation)){
             mFavoriteGasStations.add(gasStation);
-
-            // TODO: refresh ui
         }
     }
 
@@ -798,8 +841,6 @@ public class MainActivity extends AppCompatActivity
                     break;
                 }
             }
-
-            // TODO: refresh ui
         }
     }
 

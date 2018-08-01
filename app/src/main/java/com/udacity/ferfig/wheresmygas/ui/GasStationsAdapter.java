@@ -20,6 +20,9 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     private final Context mContext;
 
     private final List<GasStation> mData;
+    public List<GasStation> getData() {
+        return mData;
+    }
 
     private final ArrayList<GasStation> mFavoriteGasStations;
 

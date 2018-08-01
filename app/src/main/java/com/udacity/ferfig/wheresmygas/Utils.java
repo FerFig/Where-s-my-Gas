@@ -3,6 +3,7 @@ package com.udacity.ferfig.wheresmygas;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -11,6 +12,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -38,10 +40,7 @@ public class Utils {
     public static final String STORE_GAS_STATIONS = "wmg_gas_stations";
     public static final String STORE_LAST_PICKED_LOCATION = "wmg_last_picked_location";
     public static final String STORE_FAVORITE_GAS_STATIONS = "wmg_favorites";
-    public static final String STORE_FAB_STATE = "wmg_fab_state";
-
-    public static final String FAB_STATE_PICK_LOCATION = "wmg_fab_pick_location";
-    public static final Object FAB_STATE_REFRESH = "wmg_fab_refresh";
+    public static final String STORE_SWIPE_MSG_VISIBILITY = "wmg_swipe_feedback";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
     private static final LatLng MAP_DEFAULT_LOCATION = new LatLng(38.736946, -9.142685); //Portugal - Lisbon location
@@ -49,6 +48,8 @@ public class Utils {
     public static final long MAP_DEFAULT_SEARCH_RADIUS = 1500;
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+
+    public static final String USER_SWIPED_REFRESH = "wsg_user_refreshed";
 
     public static boolean noInternetIsAvailable(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
@@ -201,5 +202,27 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static boolean isDeviceInLandscape(Context context){
+        return context.getResources().getBoolean(R.bool.isInLandscape);
+    }
+
+    public static boolean userHasRefreshed(Context context) {
+        boolean mSetting;
+        try {
+            SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
+            mSetting = mSettings.getBoolean(USER_SWIPED_REFRESH, false);
+        } catch (Exception e) {
+            mSetting = false;
+        }
+        return mSetting;
+    }
+
+    public static void setUserHasRefreshed(Context context) {
+        SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putBoolean(USER_SWIPED_REFRESH, true);
+        editor.apply();
     }
 }

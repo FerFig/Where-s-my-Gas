@@ -22,5 +22,6 @@
     <string name="sb_text_unknown_location">Last location unknown</string>
     <string name="sb_text_google_play_services_error">Sorry, an error occurred (GooglePlayServices exception)</string>
     <string name="sb_text_navigation_is_not_possible">Sorry, there is no navigation software installed!</string>
+    <string name="swipe_to_refresh">Swipe down to refresh</string>
 
 </resources>
