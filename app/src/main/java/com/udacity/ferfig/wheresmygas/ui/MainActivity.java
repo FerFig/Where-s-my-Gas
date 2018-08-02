@@ -1,4 +1,4 @@
-package com.udacity.ferfig.wheresmygas;
+package com.udacity.ferfig.wheresmygas.ui;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -41,13 +41,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.udacity.ferfig.wheresmygas.Api.ClientConfig;
 import com.udacity.ferfig.wheresmygas.Api.RetrofitClient;
-import com.udacity.ferfig.wheresmygas.Utils.SnackBarActions;
+import com.udacity.ferfig.wheresmygas.R;
+import com.udacity.ferfig.wheresmygas.Utils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.model.maps.GasStationsList;
 import com.udacity.ferfig.wheresmygas.model.maps.Result;
 import com.udacity.ferfig.wheresmygas.provider.DbUtils;
 import com.udacity.ferfig.wheresmygas.provider.GasStationsAsyncLoader;
-import com.udacity.ferfig.wheresmygas.ui.GasStationsAdapter;
+import com.udacity.ferfig.wheresmygas.ui.adapter.GasStationsAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -726,6 +727,14 @@ public class MainActivity extends AppCompatActivity
                         int position = 0;
                         for (GasStation adapterGasStation : gasStationInAdapter) {
                             if (adapterGasStation.getId().equals(gasStationData.getId())) {
+//                                RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getApplicationContext()) {
+//                                    @Override protected int getVerticalSnapPreference() {
+//                                        return LinearSmoothScroller.SNAP_TO_START;
+//                                    }
+//                                };
+//                                smoothScroller.setTargetPosition(position);
+//                                linearLayoutManager.startSmoothScroll(smoothScroller);
+
                                 linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, null, position);
                                 break;
                             }
