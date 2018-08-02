@@ -1,4 +1,4 @@
-package com.udacity.ferfig.wheresmygas.Api;
+package com.udacity.ferfig.wheresmygas.api;
 
 public class ClientConfig {
     public static final String BASE_URL = "https://maps.googleapis.com";

@@ -1,4 +1,4 @@
-package com.udacity.ferfig.wheresmygas.Api;
+package com.udacity.ferfig.wheresmygas.api;
 
 import com.udacity.ferfig.wheresmygas.model.maps.GasStationsList;
 
