@@ -1,6 +1,5 @@
 package com.udacity.ferfig.wheresmygas.provider;
 
-import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 

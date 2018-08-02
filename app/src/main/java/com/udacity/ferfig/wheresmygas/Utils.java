@@ -22,6 +22,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
+import com.udacity.ferfig.wheresmygas.ui.SnackBarAction;
+import com.udacity.ferfig.wheresmygas.ui.SnackBarActions;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public class Utils {
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
-    public static final String USER_SWIPED_REFRESH = "wsg_user_refreshed";
+    private static final String USER_SWIPED_REFRESH = "wsg_user_refreshed";
 
     public static boolean noInternetIsAvailable(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
@@ -100,12 +102,14 @@ public class Utils {
     }
 
     public static String formatDistance(float distance) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+        DecimalFormat decimalFormat;
         StringBuilder stringBuilder = new StringBuilder();
         if (distance<1000) {
+            decimalFormat = new DecimalFormat("#");
             stringBuilder.append(decimalFormat.format(distance));
             stringBuilder.append("m");
         }else {
+            decimalFormat = new DecimalFormat("#.00");
             stringBuilder.append(decimalFormat.format(distance/1000));
             stringBuilder.append("km");
         }
@@ -140,16 +144,6 @@ public class Utils {
             directionsIntent.setPackage("com.google.android.apps.maps");
         }
         return directionsIntent;
-    }
-
-    public enum SnackBarActions {
-        RETRY_CONNECTION,
-        REQUEST_PERMISSIONS,
-        RETRY_GET_NEARBY_STATIONS,
-        RETRY_GET_NEARBY_STATIONS_IN_WIDER_AREA,
-        RETRY_CONNECTION_REFRESH,
-        SELECT_LOCATION,
-        REQUEST_LOCATION_ACTIVATION
     }
 
     public static boolean hasLocationPermission(Context context) {
