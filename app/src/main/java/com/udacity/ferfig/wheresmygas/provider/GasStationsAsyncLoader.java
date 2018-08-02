@@ -38,7 +38,6 @@ public class GasStationsAsyncLoader extends GasStationsAsyncTaskLoader<ArrayList
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL)),
                                 cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LATITUDE)),
                                 cursor.getDouble(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE)),
-                                cursor.getFloat(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DISTANCE)),
                                 cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_ADDRESS)),
                                 GasStationTypeConverter.stringToGasStationList(
                                     cursor.getString(cursor.getColumnIndex(GasStationEntry.COLUMN_GAS_STATION_DETAILS))

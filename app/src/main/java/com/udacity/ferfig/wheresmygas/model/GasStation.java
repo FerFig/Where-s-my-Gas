@@ -1,6 +1,8 @@
 package com.udacity.ferfig.wheresmygas.model;
 
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,17 +16,15 @@ public class GasStation implements Parcelable {
     private String mImageUrl;
     private Double mLatitude;
     private Double mLongitude;
-    private Float mDistance;
     private String mAddress;
     private Result mDetails;
 
-    public GasStation(String id, String name, String imageUrl, Double latitude, Double longitude, Float distance, String address, Result details) {
+    public GasStation(String id, String name, String imageUrl, Double latitude, Double longitude, String address, Result details) {
         this.mId = id;
         this.mName = name;
         this.mImageUrl = imageUrl;
         this.mLatitude = latitude;
         this.mLongitude = longitude;
-        this.mDistance = distance;
         this.mAddress = address;
         this.mDetails = details;
     }
@@ -36,7 +36,6 @@ public class GasStation implements Parcelable {
         mImageUrl = in.readString();
         mLatitude = in.readDouble();
         mLongitude = in.readDouble();
-        mDistance = in.readFloat();
         mAddress = in.readString();
         mDetails = in.readParcelable(Result.class.getClassLoader());
     }
@@ -65,7 +64,6 @@ public class GasStation implements Parcelable {
         dest.writeString(mImageUrl);
         dest.writeDouble(mLatitude);
         dest.writeDouble(mLongitude);
-        dest.writeFloat(mDistance);
         dest.writeString(mAddress);
         mDetails.writeToParcel(dest, flags);
     }
@@ -109,14 +107,6 @@ public class GasStation implements Parcelable {
         this.mLongitude = longitude;
     }
 
-    public Float getDistance() {
-        return mDistance;
-    }
-
-    public void setDistance(Float distance) {
-        this.mDistance = distance;
-    }
-
     public String getAddress() {
         return mAddress;
     }
@@ -131,5 +121,19 @@ public class GasStation implements Parcelable {
 
     public void setDetails(Result details) {
         this.mDetails = details;
+    }
+
+    /**
+     * Distance must always be calculated in relation to current or a given location
+     * @param location current or specified location
+     * @return distance to param location
+     */
+    public float getDistanceTo(Location location) {
+        //
+        if (location == null) return -1f;
+        Location gasLocation = new Location(LocationManager.GPS_PROVIDER);
+        gasLocation.setLatitude(this.getLatitude());
+        gasLocation.setLongitude(this.getLongitude());
+        return gasLocation.distanceTo(location); // meters
     }
 }

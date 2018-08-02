@@ -18,7 +18,6 @@ public class DbUtils {
         cv.put(GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL, gasStation.getImageUrl());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_LATITUDE, gasStation.getLatitude());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_LONGITUDE, gasStation.getLongitude());
-        cv.put(GasStationEntry.COLUMN_GAS_STATION_DISTANCE, gasStation.getDistance());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_ADDRESS, gasStation.getAddress());
         cv.put(GasStationEntry.COLUMN_GAS_STATION_DETAILS, GasStationTypeConverter.gasStationListToString(gasStation.getDetails()));
 
