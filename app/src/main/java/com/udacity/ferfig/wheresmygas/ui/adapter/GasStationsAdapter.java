@@ -1,4 +1,4 @@
-package com.udacity.ferfig.wheresmygas.ui;
+package com.udacity.ferfig.wheresmygas.ui.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

@@ -1,4 +1,4 @@
-package com.udacity.ferfig.wheresmygas.ui;
+package com.udacity.ferfig.wheresmygas.ui.adapter;
 
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.udacity.ferfig.wheresmygas.R;
 import com.udacity.ferfig.wheresmygas.Utils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
+import com.udacity.ferfig.wheresmygas.ui.adapter.GasStationsAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
