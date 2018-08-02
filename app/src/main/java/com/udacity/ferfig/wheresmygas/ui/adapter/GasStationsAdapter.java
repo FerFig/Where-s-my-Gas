@@ -1,6 +1,7 @@
 package com.udacity.ferfig.wheresmygas.ui.adapter;
 
 import android.content.Context;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,6 +19,8 @@ import java.util.List;
 public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolder> {
 
     private final Context mContext;
+
+    private final Location mLastKnownLocation;
 
     private final List<GasStation> mData;
     public List<GasStation> getData() {
@@ -44,12 +47,14 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     public GasStationsAdapter(Context context, List<GasStation> gasStationDataList,
                               ArrayList<GasStation> favoriteGasStations,
+                              Location lastKnownLocation,
                               OnItemClickListener gasStationClickListener,
                               OnFavoritesClickListener gasStationFavoritesClickListener,
                               OnDirectionsClickListener gasStationDirectionsClickListener) {
         this.mContext = context;
         this.mData = gasStationDataList;
         this.mFavoriteGasStations = favoriteGasStations;
+        this.mLastKnownLocation = lastKnownLocation;
         this.itemClickListener = gasStationClickListener;
         this.favoritesClickListener = gasStationFavoritesClickListener;
         this.directionsClickListener = gasStationDirectionsClickListener;
@@ -66,7 +71,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     @Override
     public void onBindViewHolder(@NonNull GasStationViewHolder holder, int position) {
         Log.d(Utils.TAG, "Gas Station: " + mData.get(position).getName() + " ( " + position + " = " + String.valueOf(getItemCount()-1) + " )");
-        holder.bind(mData.get(position),
+        holder.bind(mData.get(position), mLastKnownLocation,
                 itemClickListener, favoritesClickListener, directionsClickListener,
                 Utils.isFavoriteGasStation(mData.get(position).getId(), mFavoriteGasStations));
     }

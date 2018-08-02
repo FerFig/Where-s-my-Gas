@@ -1,5 +1,6 @@
 package com.udacity.ferfig.wheresmygas.ui.adapter;
 
+import android.location.Location;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -45,6 +46,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(final GasStation gasStationData,
+                     final Location lastKnownLocation,
                      final GasStationsAdapter.OnItemClickListener listener,
                      final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener,
                      final GasStationsAdapter.OnDirectionsClickListener directionsClickListener,
@@ -52,7 +54,10 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
 
         String gasStationName = gasStationData.getName();
         String gasStationAddress = gasStationData.getAddress();
-        String gasStationDistance = Utils.formatDistance(gasStationData.getDistance());
+        String gasStationDistance = "";
+        if (lastKnownLocation!= null) {
+            gasStationDistance = Utils.formatDistance(gasStationData.getDistanceTo(lastKnownLocation));
+        }
 //TODO Add gas station image. if time permits...!!!
 //        String imageUrl = gasStationData.getImageUrl();
 //        if (imageUrl.isEmpty()) {
