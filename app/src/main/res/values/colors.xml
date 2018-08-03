@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#FF5722</color>
     <color name="colorPrimaryDark">#e64a19</color>
-    <color name="color_primary_light">#FFCCBC</color>
+    <color name="colorPrimaryLight">#FFCCBC</color>
     <color name="colorAccent">#00BCD4</color>
 
     <color name="colorCardViewBackground">#CFD8DC</color>
@@ -11,4 +11,6 @@
     <color name="open_now">#4CAF50</color>
     <color name="open_unknown">#FFEB3B</color>
     <color name="closed">#F44336</color>
+
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources>
