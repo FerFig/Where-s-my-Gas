@@ -17,13 +17,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/widget_radio_group"
-        android:padding="20dp">
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/widget_selection_both"
-            android:text="@string/widget_option_show_both"
-            android:layout_margin="10dp"/>
+        android:padding="20dp"
+        android:checkedButton="@id/widget_selection_both">
         <RadioButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,6 +30,12 @@
             android:layout_height="wrap_content"
             android:id="@+id/widget_selection_favorite_only"
             android:text="@string/widget_option_show_favorite"
+            android:layout_margin="10dp"/>
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/widget_selection_both"
+            android:text="@string/widget_option_show_both"
             android:layout_margin="10dp"/>
     </RadioGroup>
 
