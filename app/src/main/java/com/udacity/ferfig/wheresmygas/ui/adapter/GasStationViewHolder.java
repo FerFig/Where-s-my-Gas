@@ -1,5 +1,7 @@
 package com.udacity.ferfig.wheresmygas.ui.adapter;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
@@ -9,9 +11,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.udacity.ferfig.wheresmygas.R;
 import com.udacity.ferfig.wheresmygas.Utils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
+import com.udacity.ferfig.wheresmygas.model.maps.Result;
 import com.udacity.ferfig.wheresmygas.ui.adapter.GasStationsAdapter;
 
 import butterknife.BindView;
@@ -29,9 +33,6 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
 
     @BindView(R.id.tvGasStationDistance)
     TextView mTvGasStationDistance;
-
-    @BindView(R.id.imgGasStationOpen)
-    ImageView mImgGasStationImage;
 
     @BindView(R.id.imgFavorites)
     ImageButton mImgButtonFavorites;
@@ -70,7 +71,24 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
 //        mImgGasStationImage.setContentDescription(gasStationName);
 
         mTvGasStationName.setText(gasStationName);
-        mTvGasStationAddress.setText(gasStationAddress);
+        Result gasStationDetails = gasStationData.getDetails();
+        int imgResource;
+        if (gasStationDetails.getOpeningHours() != null) {
+            if (gasStationDetails.getOpeningHours().getOpenNow()) {
+                // open now
+                imgResource =  R.drawable.ic_open_now;
+                //mTvGasStationName.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_open_now, 0,0,0);
+            } else {
+                // not opened
+                imgResource = R.drawable.ic_closed;
+              //  marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+            }
+        } else { // unknow if it's open or not! show dimmed/different color...
+            imgResource = R.drawable.ic_open_unknown;
+        }
+        mTvGasStationName.setCompoundDrawablesWithIntrinsicBounds(imgResource, 0,0,0);
+
+        mTvGasStationAddress.setText(" ".concat(gasStationAddress));
         mTvGasStationDistance.setText(gasStationDistance);
 
         itemView.setOnClickListener(new View.OnClickListener() {

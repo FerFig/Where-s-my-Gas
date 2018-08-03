@@ -27,7 +27,7 @@
     <!-- Widget config screen text -->
     <string name="add_widget">Add widget</string>
     <string name="widget_configure_text">Please select which Gas Stations to show in widget</string>
-    <string name="widget_option_show_both">Show both (near and favorite)</string>
+    <string name="widget_option_show_both">Show both (side by side)</string>
     <string name="widget_option_show_near">Show near only</string>
     <string name="widget_option_show_favorite">Show favorite only</string>
     <string name="sb_text_widget_no_selection">Please select an option.</string>
