@@ -20,7 +20,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.ui.SnackBarAction;
 import com.udacity.ferfig.wheresmygas.ui.SnackBarActions;
@@ -45,7 +44,6 @@ public class Utils {
     public static final String STORE_SWIPE_MSG_VISIBILITY = "wmg_swipe_feedback";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
-    private static final LatLng MAP_DEFAULT_LOCATION = new LatLng(38.736946, -9.142685); //Portugal - Lisbon location
 
     public static final long MAP_DEFAULT_SEARCH_RADIUS = 1500;
 
@@ -53,8 +51,21 @@ public class Utils {
 
     private static final String USER_SWIPED_REFRESH = "wsg_user_refreshed";
 
-    public static boolean noInternetIsAvailable(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+    // Shared Preferences
+    public static final String PREFS_NAME = "com.udacity.ferfig.wheresmygas.preferences";
+    public static final String PREF_NEAR_GAS_STATION_PREFIX = "com.udacity.ferfig.wmg.near_";
+    public static final String PREF_FAVORITE_GAS_STATION_PREFIX = "com.udacity.ferfig.wmg.fav_";
+    public static final String PREF_GAS_STATION_ID = "id";
+    public static final String PREF_GAS_STATION_NAME = "name";
+    public static final String PREF_GAS_STATION_IMAGE_URL = "image.url";
+    public static final String PREF_GAS_STATION_LATITUDE = "latitude";
+    public static final String PREF_GAS_STATION_LONGITUDE = "longitude";
+    public static final String PREF_GAS_STATION_ADDRESS = "address";
+    public static final String PREF_LAST_KNOWN_LATITUDE = "com.udacity.ferfig.wmg.last.latitude";
+    public static final String PREF_LAST_KNOWN_LONGITUDE = "com.udacity.ferfig.wmg.last.longitude";
+
+    public static boolean noInternetIsAvailable(Activity activity) {
+        ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo ni = null;
         if (cm != null) {
             ni = cm.getActiveNetworkInfo();
@@ -62,8 +73,8 @@ public class Utils {
         return (ni == null || !ni.isConnected());
     }
 
-    public static boolean isLocationServiceActive(Context context) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    public static boolean isLocationServiceActive(Activity activity) {
+        LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         return locationManager != null && (
                 locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                         || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -104,12 +115,16 @@ public class Utils {
     public static String formatDistance(float distance) {
         DecimalFormat decimalFormat;
         StringBuilder stringBuilder = new StringBuilder();
+
+        // TODO: preference - show in miles (mi)
+        float miles = distance * 0.000621371192f;
+
         if (distance<1000) {
             decimalFormat = new DecimalFormat("#");
             stringBuilder.append(decimalFormat.format(distance));
             stringBuilder.append("m");
         }else {
-            decimalFormat = new DecimalFormat("#.00");
+            decimalFormat = new DecimalFormat("#.0");
             stringBuilder.append(decimalFormat.format(distance/1000));
             stringBuilder.append("km");
         }
@@ -167,22 +182,17 @@ public class Utils {
                 Utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
     }
 
-    public static Location getLastKnownLocation(Context context) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    public static Location getLastKnownLocation(Context contextActivity) {
+        LocationManager locationManager = (LocationManager) contextActivity.getSystemService(Context.LOCATION_SERVICE);
         Location location = null;
         if (locationManager != null) {
             try {
                 Criteria criteria = new Criteria();
                 location = locationManager.getLastKnownLocation(
-                        locationManager.getBestProvider(criteria, false));
+                        locationManager.getBestProvider(criteria, true));
             }catch (SecurityException e){
                 Log.d(TAG, "Security exception");
             }
-        }
-        if (location == null) {
-            location = new Location(LocationManager.GPS_PROVIDER);
-            location.setLatitude(Utils.MAP_DEFAULT_LOCATION.latitude);
-            location.setLongitude(Utils.MAP_DEFAULT_LOCATION.longitude);
         }
         return location;
     }

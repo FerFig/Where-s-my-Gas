@@ -52,6 +52,12 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-    </application>
 
+        <service android:name=".job.GasStationsUpdateService"
+            android:exported="false">
+            <intent-filter >
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
+    </application>
 </manifest>

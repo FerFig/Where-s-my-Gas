@@ -39,10 +39,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.udacity.ferfig.wheresmygas.Api.ClientConfig;
-import com.udacity.ferfig.wheresmygas.Api.RetrofitClient;
+import com.udacity.ferfig.wheresmygas.api.ClientConfig;
+import com.udacity.ferfig.wheresmygas.api.RetrofitClient;
 import com.udacity.ferfig.wheresmygas.R;
 import com.udacity.ferfig.wheresmygas.Utils;
+import com.udacity.ferfig.wheresmygas.job.SyncUtils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.model.maps.GasStationsList;
 import com.udacity.ferfig.wheresmygas.model.maps.Result;
@@ -144,6 +145,9 @@ public class MainActivity extends AppCompatActivity
                 mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
             }
         }
+
+        // Schedule the firebase job service to update widget data
+        SyncUtils.scheduleUpdateService(this);
     }
 
     @Override
@@ -164,7 +168,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPerformSnackBarAction(SnackBarActions action) {
-        //TODO: implement all snackbar actions
         switch (action) {
             case RETRY_CONNECTION:
                 onMapReady(mMap);
@@ -195,7 +198,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRefresh() {
-        if (Utils.noInternetIsAvailable(getApplicationContext())) {
+        if (Utils.noInternetIsAvailable(this)) {
             Utils.showSnackBar(findViewById(android.R.id.content),
                     getString(R.string.sb_text_no_internet_connectivity),
                     getString(R.string.snackbar_action_retry),
@@ -218,7 +221,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         mIsRefreshing = true;
-        mSrlNearbyPlaces.setRefreshing(mIsRefreshing);
+        mSrlNearbyPlaces.setRefreshing(true);
 
         getNearbyGasStations(false);
     }
@@ -258,7 +261,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void getNearbyGasStations(boolean bSearchWiderArea){
-        if (Utils.noInternetIsAvailable(getApplicationContext())) {
+        if (Utils.noInternetIsAvailable(this)) {
             updateRefreshingUi();
 
             Utils.showSnackBar(findViewById(android.R.id.content),
@@ -272,7 +275,13 @@ public class MainActivity extends AppCompatActivity
 
         // If search location is null try to get the last known location...
         if (mSearchLocation == null){
+            // ... from system service ...
             mSearchLocation = Utils.getLastKnownLocation(this);
+
+            if (mSearchLocation == null){
+                // .. or from shared preferences
+                mSearchLocation = SyncUtils.getLastLocationFromPreferences(getApplicationContext());
+            }
 
             // ...if we still cant get the last location prompt the user to select one
             if (mSearchLocation == null){
@@ -289,7 +298,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (bSearchWiderArea) {
-            mSearchAreaRadius += Utils.MAP_DEFAULT_SEARCH_RADIUS; //TODO: add max search area logic
+            mSearchAreaRadius += Utils.MAP_DEFAULT_SEARCH_RADIUS;
         } else {
             mSearchAreaRadius = Utils.MAP_DEFAULT_SEARCH_RADIUS;
         }
@@ -366,7 +375,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onFailure(@NonNull Call<GasStationsList> call, @NonNull Throwable t) {
                 updateRefreshingUi();
-
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_error_failed_network_request),
                         getString(R.string.snackbar_action_retry),
@@ -443,7 +451,6 @@ public class MainActivity extends AppCompatActivity
                     gasStationImageUrl,
                     gasLat,
                     gasLon,
-                    distance,
                     gasStation.getVicinity(),
                     gasStation));
         }
@@ -463,6 +470,7 @@ public class MainActivity extends AppCompatActivity
         GasStationsAdapter mainGasStationsAdapter = new GasStationsAdapter(this,
                 gasStationList,
                 mFavoriteGasStations,
+                mLastKnowDeviceLocation,
                 new GasStationsAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(GasStation gasStationData) {
@@ -672,7 +680,6 @@ public class MainActivity extends AppCompatActivity
      */
     private void updateLocationUI() {
         if (mMap == null) {
-            //TODO: retry?!
             return;
         }
         try {
@@ -684,15 +691,19 @@ public class MainActivity extends AppCompatActivity
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 mLastKnowDeviceLocation = null;
+
+                SyncUtils.invalidateLastKnownLocation(getApplicationContext());
             }
 
             // Set the OnMyLocationButtonClickListener to center the map back in last know location
             mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
                 public boolean onMyLocationButtonClick() {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
-                            Utils.MAP_DEFAULT_ZOOM));
+                    if (mLastKnowDeviceLocation != null) {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
+                                Utils.MAP_DEFAULT_ZOOM));
+                    }
                     return false;
                 }
             });
@@ -746,7 +757,6 @@ public class MainActivity extends AppCompatActivity
             });
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
-            //TODO: snackbar retry?!
         }
     }
 
@@ -784,6 +794,9 @@ public class MainActivity extends AppCompatActivity
                                     Utils.MAP_DEFAULT_ZOOM));
 
                             mSearchLocation = mLastKnowDeviceLocation;
+
+                            SyncUtils.saveLastLocationToPreferences(getApplicationContext(), mLastKnowDeviceLocation);
+
                             getNearbyGasStations(false);
                         }
                     }
@@ -853,17 +866,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void getDataFromLocalDB() {
+    public void getDataFromLocalDB() {
 
         LoaderManager.LoaderCallbacks<ArrayList<GasStation>> callback = MainActivity.this;
 
-        Bundle bundleForLoader = new Bundle();
-
         Loader<String> gasStationLoaderFromLocalDB = getSupportLoaderManager().getLoader(GasStationsAsyncLoader.LOADER_ID);
         if (gasStationLoaderFromLocalDB!=null){
-            getSupportLoaderManager().restartLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
+            getSupportLoaderManager().restartLoader(GasStationsAsyncLoader.LOADER_ID, null, callback);
         }else {
-            getSupportLoaderManager().initLoader(GasStationsAsyncLoader.LOADER_ID, bundleForLoader, callback);
+            getSupportLoaderManager().initLoader(GasStationsAsyncLoader.LOADER_ID, null, callback);
         }
     }
 

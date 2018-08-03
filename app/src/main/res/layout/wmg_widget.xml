@@ -2,7 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/colorCardViewBackground"
+    android:background="@android:color/transparent"
     android:orientation="horizontal"
     android:padding="@dimen/widget_margin"
     android:baselineAligned="false">
@@ -10,8 +10,9 @@
     <LinearLayout
         android:id="@+id/widgetNearView"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="0.5"
+        android:background="@color/colorCardViewSelected"
         android:orientation="vertical"
         android:clickable="true"
         android:focusable="true"
@@ -19,12 +20,13 @@
 
         <TextView
             android:id="@+id/tvWidgetNearGasStationDistance"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/ic_near_gas_station_24dp"
             android:gravity="center"
             android:lines="1"
-            tools:text="1.5 km" />
+            android:padding="6dp"
+            tools:text="571m" />
 
         <TextView
             android:id="@+id/tvWidgetNearGasStationName"
@@ -34,14 +36,26 @@
             android:lines="1"
             android:layout_gravity="center"
             android:textSize="18sp"
-            tools:text="Galp" />
+            android:padding="4dp"
+            tools:text="BP" />
+
+        <TextView
+            android:id="@+id/widgetNearInfoMissing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:lines="2"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="@string/widget_no_near_info" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/widgetFavoriteView"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="0.5"
+        android:background="@color/colorCardViewBackground"
         android:orientation="vertical"
         android:clickable="true"
         android:focusable="true"
@@ -49,12 +63,13 @@
 
         <TextView
             android:id="@+id/tvWidgetFavoriteGasStationDistance"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:drawableStart="@drawable/ic_favorite_gas_station_24dp"
             android:lines="1"
-            tools:text="1.5 km" />
+            android:padding="6dp"
+            tools:text="1.4km" />
 
         <TextView
             android:id="@+id/tvWidgetFavoriteGasStationName"
@@ -64,6 +79,17 @@
             android:lines="1"
             android:layout_gravity="center"
             android:textSize="18sp"
+            android:padding="4dp"
             tools:text="Galp" />
+
+        <TextView
+            android:id="@+id/widgetFavoriteInfoMissing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:lines="2"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:text="@string/widget_no_favorite_info" />
     </LinearLayout>
 </LinearLayout>

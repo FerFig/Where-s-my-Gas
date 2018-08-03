@@ -23,7 +23,6 @@ import butterknife.OnClick;
  */
 public class WmgWidgetConfigureActivity extends Activity {
 
-    private static final String PREFS_NAME = "com.udacity.ferfig.wheresmygas.widget.pref";
     private static final String PREF_PREFIX_KEY = "wmg.widget_";
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
@@ -107,18 +106,18 @@ public class WmgWidgetConfigureActivity extends Activity {
 
     // Write the selected recipe and ingredients to the SharedPreferences object for this widget
     static void saveWidgetPref(Context context, int appWidgetId, SelectedOption option) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        SharedPreferences.Editor prefs = context.getSharedPreferences(Utils.PREFS_NAME, 0).edit();
         prefs.putInt(PREF_PREFIX_KEY + appWidgetId, option.getValue());
         prefs.apply();
     }
 
     static Integer getWidgetPref(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences prefs = context.getSharedPreferences(Utils.PREFS_NAME, 0);
         return prefs.getInt(PREF_PREFIX_KEY + appWidgetId, 0);
     }
 
-    static void deleteRecipePref(Context context, int appWidgetId) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+    static void deletePref(Context context, int appWidgetId) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(Utils.PREFS_NAME, 0).edit();
         prefs.remove(PREF_PREFIX_KEY + appWidgetId);
         prefs.apply();
     }

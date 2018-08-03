@@ -9,27 +9,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
         android:text="@string/widget_configure_text" />
 
     <RadioGroup
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/widget_radio_group">
+        android:id="@+id/widget_radio_group"
+        android:padding="20dp">
         <RadioButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/widget_selection_both"
-            android:text="@string/widget_option_show_both"/>
+            android:text="@string/widget_option_show_both"
+            android:layout_margin="10dp"/>
         <RadioButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/widget_selection_near_only"
-            android:text="@string/widget_option_show_near"/>
+            android:text="@string/widget_option_show_near"
+            android:layout_margin="10dp"/>
         <RadioButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/widget_selection_favorite_only"
-            android:text="@string/widget_option_show_favorite"/>
+            android:text="@string/widget_option_show_favorite"
+            android:layout_margin="10dp"/>
     </RadioGroup>
 
     <Button
@@ -37,6 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_gravity="end"
         android:text="@string/add_widget" />
 
 </LinearLayout>
