@@ -1,23 +1,35 @@
 package com.udacity.ferfig.wheresmygas.ui;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -124,6 +136,12 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
 
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayShowHomeEnabled(true);
+            ab.setIcon(R.mipmap.ic_launcher);
+        }
+
         ButterKnife.bind(this);
 
         mSrlNearbyPlaces.setOnRefreshListener(this);
@@ -164,6 +182,46 @@ public class MainActivity extends AppCompatActivity
                     mTvSwipeRefreshMsg.getVisibility()==View.VISIBLE);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.app_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.menu_settings:
+
+                return true;
+            case R.id.menu_info:
+                showInfoWindow();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void showInfoWindow() {
+        final Dialog infoWindow = new Dialog(this);
+        infoWindow.setContentView(R.layout.info_window);
+        Window dialogWindow = infoWindow.getWindow();
+        if (dialogWindow != null) {
+            // need to set this here to see the rounded shape without the white background
+            dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+        ConstraintLayout infoWindowLayout = infoWindow.findViewById(R.id.info_window);
+        infoWindowLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                infoWindow.dismiss();
+            }
+        });
+        infoWindow.show();
     }
 
     @Override
