@@ -70,7 +70,6 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
 //        //set the content description of the movie image/thumbnail to the movie title ;)
 //        mImgGasStationImage.setContentDescription(gasStationName);
 
-        mTvGasStationName.setText(gasStationName);
         Result gasStationDetails = gasStationData.getDetails();
         int imgResource;
         if (gasStationDetails.getOpeningHours() != null) {
@@ -87,8 +86,9 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
             imgResource = R.drawable.ic_open_unknown;
         }
         mTvGasStationName.setCompoundDrawablesWithIntrinsicBounds(imgResource, 0,0,0);
+        mTvGasStationName.setText(gasStationName);
 
-        mTvGasStationAddress.setText(" ".concat(gasStationAddress));
+        mTvGasStationAddress.setText(gasStationAddress);
         mTvGasStationDistance.setText(gasStationDistance);
 
         itemView.setOnClickListener(new View.OnClickListener() {
