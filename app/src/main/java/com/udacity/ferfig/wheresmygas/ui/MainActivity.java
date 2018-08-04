@@ -1,13 +1,15 @@
 package com.udacity.ferfig.wheresmygas.ui;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
+import android.opengl.Visibility;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -26,10 +28,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -51,6 +51,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.udacity.ferfig.wheresmygas.ui.settings.SettingOption;
+import com.udacity.ferfig.wheresmygas.ui.settings.SettingsActivity;
 import com.udacity.ferfig.wheresmygas.api.ClientConfig;
 import com.udacity.ferfig.wheresmygas.api.RetrofitClient;
 import com.udacity.ferfig.wheresmygas.R;
@@ -79,7 +81,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>>
-        , SwipeRefreshLayout.OnRefreshListener{
+        , SwipeRefreshLayout.OnRefreshListener
+        , SharedPreferences.OnSharedPreferenceChangeListener{
 
     private static final int REQUEST_ACTIVATION_RESULT = 27;
     private static final int REQUEST_PICK_LOCATION_RESULT = 63;
@@ -105,6 +108,9 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<GasStation> mFavoriteGasStations;
 
     private boolean mIsRefreshing = false;
+
+    int mShowInfoWindow = SettingOption.SHOW_INFO_WINDOW.getValue();
+    int mDisplayUnits = SettingOption.UNITS_METRIC.getValue();
 
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSrlNearbyPlaces;
@@ -146,6 +152,10 @@ public class MainActivity extends AppCompatActivity
 
         mSrlNearbyPlaces.setOnRefreshListener(this);
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        readSettingsPreferences(sharedPreferences);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
         // Construct a FusedLocationProviderClient to get Last Know Location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -169,6 +179,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (mMap != null) {
             outState.putParcelable(Utils.STORE_LAST_KNOW_LOCATION, mLastKnowDeviceLocation);
@@ -188,6 +207,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.app_menu, menu);
+        if (mShowInfoWindow==SettingOption.HIDE_INFO_WINDOW.getValue()){
+            MenuItem infoItem = menu.findItem(R.id.menu_info);
+            if (infoItem != null) {
+                infoItem.setVisible(false);
+            }
+        }
         return true;
     }
 
@@ -196,7 +221,7 @@ public class MainActivity extends AppCompatActivity
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.menu_settings:
-
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case R.id.menu_info:
                 showInfoWindow();
@@ -385,14 +410,6 @@ public class MainActivity extends AppCompatActivity
                     GasStationsList gasStationsList = response.body();
 
                     if (gasStationsList != null) {
-                        //TODO if needed and time permits... add status check?!
-                        //String placesSearchStatus = gasStationsList.getStatus();
-                        //if (placesSearchStatus.equals(RESPONSE_OK)){
-                        //if (placesSearchStatus.equals(RESPONSE_ZERO_RESULTS)){
-                        //if (placesSearchStatus.equals(RESPONSE_OVER_QUERY_LIMIT)){
-                        //if (placesSearchStatus.equals(RESPONSE_REQUEST_DENIED)){
-                        //if (placesSearchStatus.equals(RESPONSE_INVALID_REQUEST)){
-                        //if (placesSearchStatus.equals(RESPONSE_UNKNOWN_ERROR)){
 
                         List<Result> gasStationListResult = gasStationsList.getResults();
 
@@ -476,23 +493,14 @@ public class MainActivity extends AppCompatActivity
             distance = gasLocation.distanceTo(mLastKnowDeviceLocation); // meters
 
             String gasStationImageUrl;
-//TODO add gas station images... if time permits
-//            List<Photo> gasStationPhotos = gasStation.getPhotos();
-//            if (gasStationPhotos.size()>0){
-//                gasStationImageUrl = ClientConfig.BASE_URL.concat(
-//                        "/maps/api/place/photo?maxwidth=200&photoreference=").concat(
-//                        gasStationPhotos.get(0).getPhotoReference()).concat("&key=")
-//                        .concat(getString(R.string.google_api_key));
-//            }else {
-                gasStationImageUrl = gasStation.getIcon();
-//            }
+            gasStationImageUrl = gasStation.getIcon();
 
             LatLng location = new LatLng(gasLat, gasLon);
 
             MarkerOptions markerOptions = new MarkerOptions()
                     .title(gasStation.getName())
                     .position(location)
-                    .snippet(Utils.formatDistance(distance));
+                    .snippet(Utils.formatDistance(this, distance));
 
             markersBounds.include(markerOptions.getPosition());
 
@@ -599,20 +607,16 @@ public class MainActivity extends AppCompatActivity
     private void updateMarkerUi(Marker marker) {
         Result gasStation = (Result) marker.getTag();
         if (gasStation != null) {
-            if (Utils.isFavoriteGasStation(gasStation.getId(), mFavoriteGasStations)) {
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-            } else { // non favorite
-                if (gasStation.getOpeningHours() != null) {
-                    if (gasStation.getOpeningHours().getOpenNow()) {
-                        // open now
-                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    } else {
-                        // not opened = show in different color
-                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
-                    }
-                } else { // unknow if it's open or not! show dimmed/different color...
-                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+            if (gasStation.getOpeningHours() != null) {
+                if (gasStation.getOpeningHours().getOpenNow()) {
+                    // open now
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                } else {
+                    // not opened = show in different color
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                 }
+            } else { // unknow if it's open or not! show dimmed/different color...
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             }
         }
     }
@@ -957,5 +961,74 @@ public class MainActivity extends AppCompatActivity
     public void onLoaderReset(@NonNull Loader<ArrayList<GasStation>> loader) {
 
     }
+
     /* END LoaderCallbacks Methods */
+
+    /* Preferences */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        readSharedPrefs(sharedPreferences, key);
+    }
+
+    private void readSettingsPreferences(SharedPreferences sharedPreferences) {
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_show_info_window));
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_units));
+    }
+
+    private void readSharedPrefs(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.pref_show_info_window))){
+            int currentVal = Integer.valueOf(sharedPreferences.getString(getString(R.string.pref_show_info_window),
+                    String.valueOf(SettingOption.SHOW_INFO_WINDOW.getValue())));
+            if (mShowInfoWindow != currentVal){
+                //if it has changed...
+                mShowInfoWindow = currentVal;
+
+                // this will trigger the menu creation method again
+                invalidateOptionsMenu();
+            }
+            else{
+                Log.i(Utils.TAG, "MainActivity: ... from settings no changes");
+            }
+        }
+        if (key.equals(getString(R.string.pref_units))){
+            int currentVal = Integer.valueOf(sharedPreferences.getString(getString(R.string.pref_units),
+                    String.valueOf(SettingOption.UNITS_METRIC.getValue())));
+            if (mDisplayUnits != currentVal){
+                //if it has changed...
+                mDisplayUnits = currentVal;
+
+                refreshUiMeasures();
+            }
+            else{
+                Log.i(Utils.TAG, "MainActivity: ... from settings no changes");
+            }
+        }
+    }
+
+    private void refreshUiMeasures() {
+        updateMarkerData();
+
+        if (mRvNearbyPlaces != null && mRvNearbyPlaces.getAdapter() != null) {
+            // force refresh of recycler view layout
+            mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    private void updateMarkerData() {
+        for (Marker marker:mMarkers) {
+            Result gasStation = (Result) marker.getTag();
+            if (gasStation != null) {
+                Location gasLocation = new Location(LocationManager.GPS_PROVIDER);
+                gasLocation.setLatitude(gasStation.getGeometry().getLocation().getLat());
+                gasLocation.setLongitude(gasStation.getGeometry().getLocation().getLng());
+                float distance = gasLocation.distanceTo(mLastKnowDeviceLocation); // meters
+                marker.setSnippet(Utils.formatDistance(this, distance));
+                if (marker.isInfoWindowShown()){
+                    // this will refresh the info window distance :)
+                    marker.hideInfoWindow();
+                    marker.showInfoWindow();
+                }
+            }
+        }
+    }
 }

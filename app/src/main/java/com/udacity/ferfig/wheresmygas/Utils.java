@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
 import com.udacity.ferfig.wheresmygas.ui.SnackBarAction;
 import com.udacity.ferfig.wheresmygas.ui.SnackBarActions;
+import com.udacity.ferfig.wheresmygas.ui.settings.SettingOption;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -112,21 +113,31 @@ public class Utils {
         snackbar.show();
     }
 
-    public static String formatDistance(float distance) {
+    public static String formatDistance(Context context, float distance) {
         DecimalFormat decimalFormat;
         StringBuilder stringBuilder = new StringBuilder();
 
-        // TODO: preference - show in miles (mi)
-        float miles = distance * 0.000621371192f;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int unitPreference = Integer.valueOf(
+                sharedPreferences.getString(context.getString(R.string.pref_units),
+                        String.valueOf(SettingOption.UNITS_METRIC.getValue())));
 
-        if (distance<1000) {
-            decimalFormat = new DecimalFormat("#");
-            stringBuilder.append(decimalFormat.format(distance));
-            stringBuilder.append("m");
-        }else {
-            decimalFormat = new DecimalFormat("#.0");
-            stringBuilder.append(decimalFormat.format(distance/1000));
-            stringBuilder.append("km");
+        if (unitPreference == SettingOption.UNITS_IMPERIAL.getValue()) {
+            float miles = distance * 0.000621371192f;
+            decimalFormat = new DecimalFormat("0.00");
+            stringBuilder.append(decimalFormat.format(miles));
+            stringBuilder.append("mi");
+        }
+        else { // Metric
+            if (distance < 1000) {
+                decimalFormat = new DecimalFormat("0");
+                stringBuilder.append(decimalFormat.format(distance));
+                stringBuilder.append("m");
+            } else {
+                decimalFormat = new DecimalFormat("0.0");
+                stringBuilder.append(decimalFormat.format(distance / 1000));
+                stringBuilder.append("km");
+            }
         }
         return stringBuilder.toString();
     }

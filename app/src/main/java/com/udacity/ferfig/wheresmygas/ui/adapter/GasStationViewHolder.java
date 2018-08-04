@@ -46,7 +46,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
         ButterKnife.bind(this, itemView);
     }
 
-    public void bind(final GasStation gasStationData,
+    public void bind(Context context, final GasStation gasStationData,
                      final Location lastKnownLocation,
                      final GasStationsAdapter.OnItemClickListener listener,
                      final GasStationsAdapter.OnFavoritesClickListener favoritesClickListener,
@@ -57,18 +57,9 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
         String gasStationAddress = gasStationData.getAddress();
         String gasStationDistance = "";
         if (lastKnownLocation!= null) {
-            gasStationDistance = Utils.formatDistance(gasStationData.getDistanceTo(lastKnownLocation));
+            gasStationDistance = Utils.formatDistance(context,
+                    gasStationData.getDistanceTo(lastKnownLocation));
         }
-//TODO Add gas station image. if time permits...!!!
-//        String imageUrl = gasStationData.getImageUrl();
-//        if (imageUrl.isEmpty()) {
-//            Picasso.get().load(R.mipmap.ic_launcher_round).into(mImgGasStationImage);
-//        }
-//        else {
-//            Picasso.get().load(imageUrl).into(mImgGasStationImage);
-//        }
-//        //set the content description of the movie image/thumbnail to the movie title ;)
-//        mImgGasStationImage.setContentDescription(gasStationName);
 
         Result gasStationDetails = gasStationData.getDetails();
         int imgResource;

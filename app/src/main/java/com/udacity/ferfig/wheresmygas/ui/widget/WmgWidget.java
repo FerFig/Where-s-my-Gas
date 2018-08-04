@@ -42,7 +42,8 @@ public class WmgWidget extends AppWidgetProvider {
                 views.setTextViewText(R.id.tvWidgetNearGasStationDistance, ""); //unknown :(
             }else {
                 views.setTextViewText(R.id.tvWidgetNearGasStationDistance,
-                        Utils.formatDistance(nearGasStationData.getDistanceTo(lastKnownLocation)));
+                        Utils.formatDistance(context,
+                                nearGasStationData.getDistanceTo(lastKnownLocation)));
             }
             Intent mNearDirectionsIntent = Utils.buildDirectionsToIntent(nearGasStationData,
                     true); // try to open turn by turn in google maps -- for Google credits ;)
@@ -68,7 +69,8 @@ public class WmgWidget extends AppWidgetProvider {
             }
             else {
                 views.setTextViewText(R.id.tvWidgetFavoriteGasStationDistance,
-                        Utils.formatDistance(favoriteGasStationData.getDistanceTo(lastKnownLocation)));
+                        Utils.formatDistance(context,
+                                favoriteGasStationData.getDistanceTo(lastKnownLocation)));
             }
             Intent mFavoriteDirectionsIntent = Utils.buildDirectionsToIntent(favoriteGasStationData,
                     true); // try to open turn by turn in google maps -- for Google credits ;)

@@ -41,9 +41,10 @@
     <string name="settings_save">Save</string>
     <string name="title_activity_settings">Settings</string>
 
-    <!--info window -->
+    <!-- info window -->
     <string name="gas_station_is_currently_open">Gas Station currently open?</string>
     <string name="gas_station_open">Yes, it\'s open</string>
     <string name="gas_station_closed">No, it\'s closed.</string>
     <string name="gas_station_open_unknown">Unknown!</string>
+
 </resources>

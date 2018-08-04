@@ -35,8 +35,7 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //TODO: improve upgrade to avoid loose favorite gas stations
-        // For now simply drop the table and create a new one.
+        // Simply drop the table and create a new one: but this way we loose all previous info :(
         db.execSQL("DROP TABLE IF EXISTS " + GasStationEntry.TABLE_NAME);
         onCreate(db);
 

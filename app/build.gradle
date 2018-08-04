@@ -25,6 +25,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation "com.android.support:appcompat-v7:$androidSupportVersion"
+    implementation "com.android.support:preference-v7:$androidSupportVersion"
     implementation "com.android.support:cardview-v7:$androidSupportVersion"
     implementation "com.android.support:design:$androidSupportVersion"
     implementation "com.android.support:support-annotations:$androidSupportVersion"
@@ -48,15 +49,4 @@ dependencies {
 
     //Firebase JobDispatcher
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-
-    // Picasso
-    implementation 'com.squareup.picasso:picasso:2.71828'
-
-    //TODO: if tests not implemented, remove this and corresponding testing structure
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
-    //TODO: remove this (tool to browse the SQLite database)
-    debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
 }

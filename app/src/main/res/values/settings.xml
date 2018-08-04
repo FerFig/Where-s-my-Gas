@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_show_info_window">Show info option menu</string>
+    <string-array name="pref_show_info_option">
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+    <!-- values must match @SettingOptions -->
+    <string-array name="pref_show_info_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+    <string name="pref_units">Unit of measure</string>
+    <string-array name="pref_units_option">
+        <item>Metric (km - kilometers)</item>
+        <item>Imperial (mi - miles)</item>
+    </string-array>
+    <!-- values must match @SettingOptions -->
+    <string-array name="pref_units_values">
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+</resources>
