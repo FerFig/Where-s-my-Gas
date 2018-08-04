@@ -47,4 +47,6 @@
     <string name="gas_station_closed">No, it\'s closed.</string>
     <string name="gas_station_open_unknown">Unknown!</string>
 
+    <string name="button_favorites_description">Toogle favorite gas station</string>
+    <string name="button_directions_description">Get directions to gas station</string>
 </resources>

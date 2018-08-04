@@ -66,17 +66,4 @@
         app:layout_constraintStart_toStartOf="@+id/tv_gas_station_open_hours"
         app:layout_constraintTop_toBottomOf="@+id/tv_closed" />
 
-
-    <ImageView
-        android:id="@+id/line_separator"
-        android:paddingTop="30dp"
-        android:layout_width="0dp"
-        android:visibility="gone"
-        android:layout_height="wrap_content"
-        android:background="@drawable/line_shape"
-        app:layout_constraintStart_toStartOf="@+id/tv_gas_station_open_hours"
-        app:layout_constraintEnd_toEndOf="@+id/tv_gas_station_open_hours"
-        app:layout_constraintTop_toBottomOf="@+id/tv_unknown_schedule"
-        />
-
 </android.support.constraint.ConstraintLayout>

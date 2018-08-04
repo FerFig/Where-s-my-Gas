@@ -1,17 +1,14 @@
 package com.udacity.ferfig.wheresmygas.ui.adapter;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.udacity.ferfig.wheresmygas.R;
 import com.udacity.ferfig.wheresmygas.Utils;
 import com.udacity.ferfig.wheresmygas.model.GasStation;
