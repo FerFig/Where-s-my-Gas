@@ -14,6 +14,5 @@
         android:layout_marginLeft="@dimen/list_toolbar_side_margin"
         android:layout_marginRight="@dimen/list_toolbar_side_margin"
         app:contentInsetStart="16dp"
-        app:layout_collapseMode="pin"
-        app:navigationIcon="@mipmap/ic_launcher" />
+        app:layout_collapseMode="pin" />
 </android.support.design.widget.AppBarLayout>
