@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -111,6 +113,9 @@ public class MainActivity extends AppCompatActivity
     int mShowInfoWindow = SettingOption.SHOW_INFO_WINDOW.getValue();
     int mDisplayUnits = SettingOption.UNITS_METRIC.getValue();
 
+    @BindView(R.id.app_bar)
+    Toolbar mAppBar;
+
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSrlNearbyPlaces;
 
@@ -150,6 +155,8 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         mSrlNearbyPlaces.setOnRefreshListener(this);
+
+        setSupportActionBar(mAppBar);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         readSettingsPreferences(sharedPreferences);
@@ -774,14 +781,16 @@ public class MainActivity extends AppCompatActivity
             mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener(){
                 @Override
                 public void onCameraIdle() {
-                    Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
-                    currentLocation.setLatitude(mMap.getCameraPosition().target.latitude);
-                    currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
-                    if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius ==0?Utils.MAP_DEFAULT_SEARCH_RADIUS: mSearchAreaRadius)) {
-                        mSearchLocation = currentLocation;
+                    if (mSearchLocation != null && mMap.getCameraPosition() != null && mMap.getCameraPosition().target != null) {
+                        Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
+                        currentLocation.setLatitude(mMap.getCameraPosition().target.latitude);
+                        currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
+                        if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius == 0 ? Utils.MAP_DEFAULT_SEARCH_RADIUS : mSearchAreaRadius)) {
+                            mSearchLocation = currentLocation;
 
-                        if (!Utils.userHasRefreshed(getApplicationContext())) {
-                            mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
+                            if (!Utils.userHasRefreshed(getApplicationContext())) {
+                                mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
                 }

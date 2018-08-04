@@ -1,22 +1,37 @@
 package com.udacity.ferfig.wheresmygas.ui.settings;
 
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.udacity.ferfig.wheresmygas.R;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class SettingsActivity extends AppCompatActivity {
+    @BindView(R.id.app_bar)
+    Toolbar mAppBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_settings);
-        ActionBar ab = this.getSupportActionBar();
-        if (ab !=null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-        }
+
+        ButterKnife.bind(this);
+
+        setSupportActionBar(mAppBar);
+        mAppBar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+        mAppBar.setNavigationIcon(R.drawable.ic_back);
     }
 
     @Override
