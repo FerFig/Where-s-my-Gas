@@ -13,8 +13,17 @@ android {
         //Add string resource API KEY to queries Google Play Services, from local properties file
         resValue "string", "google_api_key", (project.findProperty("GOOGLE_API_KEY") ?: "")
     }
+    signingConfigs {
+        release {
+            storeFile rootProject.file(project.findProperty("release_store_file"))
+            storePassword project.findProperty("release_store_password")
+            keyAlias project.findProperty("release_key_alias")
+            keyPassword project.findProperty("release_key_password")
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
