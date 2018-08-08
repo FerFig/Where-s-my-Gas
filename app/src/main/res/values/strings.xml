@@ -49,4 +49,5 @@
 
     <string name="button_favorites_description">Toogle favorite gas station</string>
     <string name="button_directions_description">Get directions to gas station</string>
+    <string name="gas_station_details">Gas Station details</string>
 </resources>
