@@ -473,11 +473,9 @@ public class MainActivity extends AppCompatActivity
 
         LatLngBounds.Builder markersBounds = new LatLngBounds.Builder(); //store markers bounds
 
-        if (mSearchLocation == mLastKnowDeviceLocation) {
-            //Also add the current location bounds so it doesn't disappear from the map
-            markersBounds.include(new LatLng(mLastKnowDeviceLocation.getLatitude(),
-                    mLastKnowDeviceLocation.getLongitude()));
-        }
+        //Also add the current location bounds so it doesn't disappear from the map
+        markersBounds.include(new LatLng(mLastKnowDeviceLocation.getLatitude(),
+                mLastKnowDeviceLocation.getLongitude()));
 
         // Store GasStations list to show in recycle view adapter
         List<GasStation> gasStationList = new ArrayList<>();
