@@ -46,7 +46,7 @@ public class Utils {
 
     public static final int MAP_DEFAULT_ZOOM = 15;
 
-    public static final long MAP_DEFAULT_SEARCH_RADIUS = 1500;
+    public static final long MAP_DEFAULT_SEARCH_RADIUS = 2500;
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
