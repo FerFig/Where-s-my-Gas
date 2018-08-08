@@ -62,6 +62,9 @@ public class GasStationsUpdateService extends JobService {
                 if (favoriteGasStation != null){
                     SyncUtils.saveFavoriteGasStationToPreferences(context, favoriteGasStation);
                 }
+                else{
+                    SyncUtils.deleteFavoriteGasStation(context);
+                }
 
                 GasStation nearGasStation = getNearGasStations(false);
                 if (nearGasStation == null) { // try wider search...
@@ -74,6 +77,9 @@ public class GasStationsUpdateService extends JobService {
                 }
                 if (nearGasStation != null) {
                     SyncUtils.saveNearGasStationToPreferences(context, nearGasStation);
+                }
+                else{
+                    SyncUtils.deleteNearGasStation(context);
                 }
 
                 sendUpdateInfoToWidget();

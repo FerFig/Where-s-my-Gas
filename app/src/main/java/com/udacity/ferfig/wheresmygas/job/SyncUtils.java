@@ -136,4 +136,23 @@ public class SyncUtils {
         prefs.remove(Utils.PREF_LAST_KNOWN_LONGITUDE);
         prefs.apply();
     }
+
+    private static void deleteGasStationPref(Context context, String preferencePrefix) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(Utils.PREFS_NAME, 0).edit();
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_ID);
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_NAME);
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_IMAGE_URL);
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_LATITUDE);
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_LONGITUDE);
+        prefs.remove(preferencePrefix + Utils.PREF_GAS_STATION_ADDRESS);
+        prefs.apply();
+    }
+
+    public static void deleteNearGasStation(Context context) {
+        deleteGasStationPref(context, Utils.PREF_NEAR_GAS_STATION_PREFIX);
+    }
+
+    public static void deleteFavoriteGasStation(Context context) {
+        deleteGasStationPref(context, Utils.PREF_FAVORITE_GAS_STATION_PREFIX);
+    }
 }
