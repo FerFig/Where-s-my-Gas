@@ -61,6 +61,10 @@ public class WmgWidget extends AppWidgetProvider {
                 }
             }
         }
+        else{
+            views.setOnClickPendingIntent(R.id.widgetNearView, null);
+        }
+
 
         if (hasFavoriteInfo) {
             views.setTextViewText(R.id.tvWidgetFavoriteGasStationName, favoriteGasStationData.getName());
@@ -87,6 +91,9 @@ public class WmgWidget extends AppWidgetProvider {
                             PendingIntent.getActivity(context, 0, mFavoriteDirectionsIntent, 0));
                 }
             }
+        }
+        else{
+            views.setOnClickPendingIntent(R.id.widgetFavoriteView, null);
         }
 
         refreshWidgetUi(widgetSelectedOption, hasNearInfo, hasFavoriteInfo, views);
