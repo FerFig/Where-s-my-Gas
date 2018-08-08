@@ -1,4 +1,4 @@
-# Where-s-my-Gas
+# Where's my Gas
 
 This android application, “Where’s my Gas”, will show nearby gas stations to the intended user without the need of any typed search.
 
