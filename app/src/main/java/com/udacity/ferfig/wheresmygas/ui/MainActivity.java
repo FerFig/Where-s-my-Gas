@@ -561,6 +561,9 @@ public class MainActivity extends AppCompatActivity
                         }
                         // refresh UI
                         refreshFavoritesUi();
+
+                        // also update widget info because changes have been made in favorite Gas Stations
+                        SyncUtils.forceUpdate(getApplicationContext());
                     }
                 },
                 new GasStationsAdapter.OnDirectionsClickListener() {
