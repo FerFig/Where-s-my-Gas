@@ -77,5 +77,7 @@
         app:layout_anchorGravity="right|end|bottom"
         app:pressedTranslationZ="@dimen/fab_pressed_translation_z"
         android:nextFocusDown="@id/rvNearbyPlaces"
-        android:nextFocusForward="@id/fabActionSelectLocation"/>
+        android:nextFocusForward="@id/fabActionSelectLocation"
+        android:contentDescription="@string/select_location_content_desc"/>
+
 </android.support.design.widget.CoordinatorLayout>
