@@ -3,8 +3,8 @@ package com.udacity.ferfig.wheresmygas.provider;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.udacity.ferfig.wheresmygas.model.GasStationTypeConverter;
 import com.udacity.ferfig.wheresmygas.model.GasStation;

@@ -261,7 +261,7 @@ public class SyncUtils {
                             Double gasLon = gasStation.getGeometry().getLocation().getLng();
 
                             gasStationList.add(new GasStation(
-                                    gasStation.getId(),
+                                    gasStation.getPlaceId(),
                                     gasStation.getName(),
                                     gasStation.getIcon(),
                                     gasLat,

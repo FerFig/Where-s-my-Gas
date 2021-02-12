@@ -9,20 +9,20 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.OrientationHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -509,7 +509,7 @@ public class MainActivity extends AppCompatActivity
             mMarkers.add(newMarker);
 
             gasStationList.add(new GasStation(
-                    gasStation.getId(),
+                    gasStation.getPlaceId(),
                     gasStation.getName(),
                     gasStationImageUrl,
                     gasLat,
@@ -540,7 +540,7 @@ public class MainActivity extends AppCompatActivity
                         for (Marker marker : mMarkers) {
                             Result gasStation = (Result)marker.getTag();
                             if (gasStation!=null){
-                                if (gasStation.getId().equals(gasStationData.getId())) {
+                                if (gasStation.getPlaceId().equals(gasStationData.getId())) {
                                     marker.showInfoWindow();
                                     mMap.animateCamera(CameraUpdateFactory.newLatLng(
                                             marker.getPosition()));
