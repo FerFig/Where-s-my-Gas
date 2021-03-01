@@ -12,7 +12,6 @@
     android:clickable="true"
     android:elevation="4dp"
     android:focusable="true"
-    android:foreground="?android:selectableItemBackground"
     app:cardCornerRadius="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -33,13 +32,13 @@
             android:ellipsize="end"
             android:lines="1"
             android:textSize="18sp"
-            android:drawableStart="@drawable/ic_open_now"
+            app:drawableStartCompat="@drawable/ic_open_now"
             android:drawablePadding="6dp"
             app:layout_constraintEnd_toStartOf="@+id/tvGasStationDistance"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Galp"
-            android:focusable="false"/>
+            android:focusable="false" />
 
         <TextView
             android:id="@+id/tvGasStationDistance"
@@ -65,14 +64,14 @@
             app:layout_constraintStart_toStartOf="@+id/tvGasStationName"
             app:layout_constraintTop_toBottomOf="@+id/tvGasStationName"
             tools:text="Av. Columbano Bordalo Pinheiro, 7, Massamá"
-            android:focusable="false"/>
+            android:focusable="false" />
 
         <ImageButton
             android:id="@+id/imgFavorites"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:layout_marginEnd="8dp"
-            android:elevation="4dp"
+            android:elevation="8dp"
             android:background="@drawable/circle_shape"
             app:layout_constraintBottom_toBottomOf="@+id/imgDirections"
             app:layout_constraintEnd_toStartOf="@+id/imgDirections"
@@ -80,7 +79,8 @@
             app:srcCompat="@drawable/ic_favorite_off_24dp"
             android:contentDescription="@string/button_favorites_description"
             android:nextFocusDown="@id/imgDirections"
-            android:nextFocusForward="@id/imgDirections"/>
+            android:nextFocusForward="@id/imgDirections"
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/imgDirections"
@@ -89,14 +89,15 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
-            android:elevation="4dp"
+            android:elevation="8dp"
             android:background="@drawable/circle_shape"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_directions_24dp"
             android:contentDescription="@string/button_directions_description"
-            android:nextFocusUp="@id/imgFavorites"/>
+            android:nextFocusUp="@id/imgFavorites"
+            android:visibility="gone" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -1,17 +1,41 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
-        android:entries="@array/pref_units_option"
-        android:entryValues="@array/pref_units_values"
-        android:key="@string/pref_units"
-        android:title="@string/pref_units"
-        android:defaultValue="0"/>
+        app:key="@string/pref_units"
+        app:title="@string/pref_units"
+        app:entries="@array/pref_units_option"
+        app:entryValues="@array/pref_units_values"
+        app:defaultValue="2"/>
 
     <ListPreference
-        android:entries="@array/pref_show_info_option"
-        android:entryValues="@array/pref_show_info_values"
-        android:key="@string/pref_show_info_window"
-        android:title="@string/pref_show_info_window"
-        android:defaultValue="0"/>
+        app:key="@string/pref_show_info_window"
+        app:title="@string/pref_show_info_window"
+        app:entries="@array/pref_show_info_option"
+        app:entryValues="@array/pref_show_info_values"
+        app:defaultValue="0"/>
 
+    <PreferenceCategory app:title="@string/pref_about_label">
+        <Preference
+            app:key="@string/pref_about_label"
+            app:summary="@string/pref_about_summary"
+            app:persistent="false"/>
+        <Preference
+            app:key="@string/pref_send_me_an_email"
+            app:title="@string/pref_send_me_an_email"
+            app:summary="@string/pref_send_me_an_email_text"
+            app:persistent="false"/>
+        <PreferenceScreen app:key="@string/pref_view_my_apps"
+            android:title="@string/pref_view_my_apps"
+            android:summary="@string/pref_view_my_apps_text">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://play.google.com/store/apps/developer?id=Fernando+Figueiredo" />
+        </PreferenceScreen>
+        <PreferenceScreen app:key="@string/pref_rate_me"
+            android:title="@string/pref_rate_me"
+            android:summary="@string/pref_rate_me_text">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://play.google.com/store/apps/details?id=com.ferfig.wheresmygas" />
+        </PreferenceScreen>
+    </PreferenceCategory>
 </PreferenceScreen>

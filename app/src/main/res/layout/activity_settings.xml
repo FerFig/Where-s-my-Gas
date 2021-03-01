@@ -10,9 +10,9 @@
     <include layout="@layout/appbar" />
 
     <fragment
-        android:id="@+id/movie_settings_container"
+        android:id="@+id/app_settings_container"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:name="com.udacity.ferfig.wheresmygas.ui.settings.SettingsFragment"
+        android:name="com.ferfig.wheresmygas.ui.settings.SettingsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

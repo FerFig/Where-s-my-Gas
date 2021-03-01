@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:configure="com.udacity.ferfig.wheresmygas.ui.widget.WmgWidgetConfigureActivity"
+    android:configure="com.ferfig.wheresmygas.ui.widget.WmgWidgetConfigureActivity"
     android:initialKeyguardLayout="@layout/wmg_widget"
     android:initialLayout="@layout/wmg_widget"
     android:minHeight="56dp"
