@@ -9,7 +9,7 @@ public class ClientConfig {
     public static final String paramTypeValue = "gas_station";
     public static final String paramKey = "key";
 
-    public static String formatParamLocation(Double latitude, double longitude){
+    public static String formatParamLocation(double latitude, double longitude){
         return latitude + ","+ longitude;
     }
 }

@@ -63,7 +63,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -117,18 +116,23 @@ public class MainActivity extends AppCompatActivity
 
     private String mSelectedGasStation;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.app_bar)
     Toolbar mAppBar;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSrlNearbyPlaces;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.tvSwipeRefreshMsg)
     TextView mTvSwipeRefreshMsg;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.fabActionSelectLocation)
     FloatingActionButton mFabActionSelectLocation;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.rvNearbyPlaces)
     RecyclerView mRvNearbyPlaces;
 
@@ -201,7 +205,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         if (mMap != null) {
             outState.putParcelable(Utils.STORE_LAST_KNOW_LOCATION, mLastKnowDeviceLocation);
             outState.putParcelable(Utils.STORE_MAP_CAMERA_POSITION, mMap.getCameraPosition());
@@ -230,6 +234,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -254,12 +259,7 @@ public class MainActivity extends AppCompatActivity
             dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
         ConstraintLayout infoWindowLayout = infoWindow.findViewById(R.id.info_window);
-        infoWindowLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                infoWindow.dismiss();
-            }
-        });
+        infoWindowLayout.setOnClickListener(f -> infoWindow.dismiss());
         infoWindow.show();
     }
 
@@ -555,46 +555,31 @@ public class MainActivity extends AppCompatActivity
                 gasStationList,
                 mFavoriteGasStations,
                 mLastKnowDeviceLocation,
-                new GasStationsAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(GasStation gasStationData) {
-                        selectGasStation(gasStationData, gasStationList);
+                gasStationData -> selectGasStation(gasStationData, gasStationList),
+                gasStationData -> {
+                    if (Utils.isFavoriteGasStation(gasStationData.getPlaceId(), mFavoriteGasStations)) {
+                        removeFromFavorites(gasStationData);
+                    } else {
+                        addToFavorites(gasStationData);
                     }
-                },
-                new GasStationsAdapter.OnFavoritesClickListener() {
-                    @Override
-                    public void onFavoritesClick(GasStation gasStationData) {
-                        if (Utils.isFavoriteGasStation(gasStationData.getPlaceId(), mFavoriteGasStations)) {
-                            removeFromFavorites(gasStationData);
-                        } else {
-                            addToFavorites(gasStationData);
-                        }
-                        // refresh UI
-                        refreshFavoritesUi();
+                    // refresh UI
+                    refreshFavoritesUi();
 
-                        // also update widget info because changes have been made in favorite Gas Stations
-                        SyncUtils.forceUpdate(getApplicationContext());
-                    }
+                    // also update widget info because changes have been made in favorite Gas Stations
+                    SyncUtils.forceUpdate(getApplicationContext());
                 },
-                new GasStationsAdapter.OnDirectionsClickListener() {
-                    @Override
-                    public void onDirectionsClick(GasStation gasStationData) {
-                        if (gasStationData.getState() == GasStationState.CLOSED) {
-                            Utils.alertBuilder(MainActivity.this, getString(R.string.closedQuestionText), null,
-                                    getString(R.string.Yes),
-                                    new  DialogInterface.OnClickListener(){
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startDirectionsToGasStation(gasStationData);
-                                        }
-                                    },
-                                    null,
-                                    null,
-                                    getString(R.string.No) ,
-                                    null
-                            );
-                        }else{
-                            startDirectionsToGasStation(gasStationData);
-                        }
+                gasStationData -> {
+                    if (gasStationData.getState() == GasStationState.CLOSED) {
+                        Utils.alertBuilder(MainActivity.this, getString(R.string.closedQuestionText), null,
+                                getString(R.string.Yes),
+                                (dialog, which) -> startDirectionsToGasStation(gasStationData),
+                                null,
+                                null,
+                                getString(R.string.No) ,
+                                null
+                        );
+                    }else{
+                        startDirectionsToGasStation(gasStationData);
                     }
                 }
         );
@@ -744,13 +729,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case Utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                }
+        if (requestCode == Utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mLocationPermissionGranted = true;
             }
         }
         if (mLocationPermissionGranted) {
@@ -807,50 +789,42 @@ public class MainActivity extends AppCompatActivity
             }
 
             // Set the OnMyLocationButtonClickListener to center the map back in last know location
-            mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-                @Override
-                public boolean onMyLocationButtonClick() {
-                    if (mLastKnowDeviceLocation != null) {
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
-                                Utils.MAP_DEFAULT_ZOOM));
-                    }
-                    return false;
+            mMap.setOnMyLocationButtonClickListener(() -> {
+                if (mLastKnowDeviceLocation != null) {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
+                            Utils.MAP_DEFAULT_ZOOM));
                 }
+                return false;
             });
 
             // Set the OnCameraIdleListener to retrieve gas stations based in map new position,
             // either by dragging the map or selecting location from pick location activity
-            mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener(){
-                @Override
-                public void onCameraIdle() {
-                    if (mSearchLocation != null && mMap.getCameraPosition() != null && mMap.getCameraPosition().target != null) {
-                        Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
-                        currentLocation.setLatitude(mMap.getCameraPosition().target.latitude);
-                        currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
-                        if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius == 0 ? Utils.MAP_DEFAULT_SEARCH_RADIUS : mSearchAreaRadius)) {
-                            mSearchLocation = currentLocation;
+            mMap.setOnCameraIdleListener(() -> {
+                if (mSearchLocation != null && mMap.getCameraPosition() != null && mMap.getCameraPosition().target != null) {
+                    Location currentLocation = new Location(LocationManager.GPS_PROVIDER);
+                    currentLocation.setLatitude(mMap.getCameraPosition().target.latitude);
+                    currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
+                    if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius == 0 ? Utils.MAP_DEFAULT_SEARCH_RADIUS : mSearchAreaRadius)) {
+                        mSearchLocation = currentLocation;
 
-                            if (!Utils.userHasRefreshed(getApplicationContext())) {
-                                mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
-                            }
+                        if (!Utils.userHasRefreshed(getApplicationContext())) {
+                            mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
                         }
                     }
                 }
             });
 
-            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    Result gasStationData = (Result) marker.getTag();
-                    if (gasStationData != null) {
-                        // make sure that the corresponding item is visible in recycler view
-                        LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
-                        GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
-                        List<GasStation> gasStationInAdapter = gasStationAdapter.getData();
-                        int position = 0;
-                        for (GasStation adapterGasStation : gasStationInAdapter) {
-                            if (adapterGasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
+            mMap.setOnMarkerClickListener(marker -> {
+                Result gasStationData = (Result) marker.getTag();
+                if (gasStationData != null) {
+                    // make sure that the corresponding item is visible in recycler view
+                    LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
+                    GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
+                    List<GasStation> gasStationInAdapter = gasStationAdapter.getData();
+                    int position = 0;
+                    for (GasStation adapterGasStation : gasStationInAdapter) {
+                        if (adapterGasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
 //                                RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getApplicationContext()) {
 //                                    @Override protected int getVerticalSnapPreference() {
 //                                        return LinearSmoothScroller.SNAP_TO_START;
@@ -859,16 +833,15 @@ public class MainActivity extends AppCompatActivity
 //                                smoothScroller.setTargetPosition(position);
 //                                linearLayoutManager.startSmoothScroll(smoothScroller);
 
-                                selectGasStation(adapterGasStation, gasStationInAdapter);
+                            selectGasStation(adapterGasStation, gasStationInAdapter);
 
-                                linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, null, position);
-                                break;
-                            }
-                            position++;
+                            linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, null, position);
+                            break;
                         }
+                        position++;
                     }
-                    return false;
                 }
+                return false;
             });
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
@@ -886,34 +859,31 @@ public class MainActivity extends AppCompatActivity
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnowDeviceLocation = task.getResult();
-                        } else {
-                            Log.e(Utils.TAG, "Exception: %s", task.getException());
-                        }
+                locationResult.addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        mLastKnowDeviceLocation = task.getResult();
+                    } else {
+                        Log.e(Utils.TAG, "Exception: %s", task.getException());
+                    }
 
-                        if (mLastKnowDeviceLocation == null){
-                            Log.d(Utils.TAG, "Current location is null. Using defaults.");
+                    if (mLastKnowDeviceLocation == null){
+                        Log.d(Utils.TAG, "Current location is null. Using defaults.");
 
-                            mLastKnowDeviceLocation = Utils.getLastKnownLocation(getApplicationContext());
-                        }
+                        mLastKnowDeviceLocation = Utils.getLastKnownLocation(getApplicationContext());
+                    }
 
-                        if (mLastKnowDeviceLocation != null) {
-                            // Move camera (immediately) here, so we don't see all the world map zooming in :)
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
-                                    Utils.MAP_DEFAULT_ZOOM));
+                    if (mLastKnowDeviceLocation != null) {
+                        // Move camera (immediately) here, so we don't see all the world map zooming in :)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(mLastKnowDeviceLocation.getLatitude(), mLastKnowDeviceLocation.getLongitude()),
+                                Utils.MAP_DEFAULT_ZOOM));
 
-                            mSearchLocation = mLastKnowDeviceLocation;
+                        mSearchLocation = mLastKnowDeviceLocation;
 
-                            SyncUtils.saveLastLocationToPreferences(getApplicationContext(), mLastKnowDeviceLocation);
+                        SyncUtils.saveLastLocationToPreferences(getApplicationContext(), mLastKnowDeviceLocation);
 
-                            getNearbyGasStations(false);
-                        }
+                        getNearbyGasStations(false);
                     }
                 });
             }
@@ -931,6 +901,7 @@ public class MainActivity extends AppCompatActivity
         if (Utils.hasLocationPermission(this)) {
             boolean activityStarted = false;
             try {
+                //TODO: replace placebuilder with new API
                 PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
                 Intent intent = builder.build(this);
 
@@ -985,6 +956,7 @@ public class MainActivity extends AppCompatActivity
 
         LoaderManager.LoaderCallbacks<ArrayList<GasStation>> callback = MainActivity.this;
 
+        //TODO: replace deprecated API
         Loader<String> gasStationLoaderFromLocalDB = getSupportLoaderManager().getLoader(GasStationsAsyncLoader.LOADER_ID);
         if (gasStationLoaderFromLocalDB!=null){
             getSupportLoaderManager().restartLoader(GasStationsAsyncLoader.LOADER_ID, null, callback);

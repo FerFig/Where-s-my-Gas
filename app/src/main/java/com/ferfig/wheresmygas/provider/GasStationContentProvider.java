@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import androidx.annotation.NonNull;
@@ -55,20 +56,18 @@ public class GasStationContentProvider extends ContentProvider {
         int match = sUriMatcher.match(uri);
         Cursor retCursor;
 
-        switch (match) {
-            // Query for the gas stations directory
-            case GAS_STATION:
-                retCursor = db.query(GasStationEntry.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
-                break;
+        // Query for the gas stations directory
+        if (match == GAS_STATION) {
+            retCursor = db.query(GasStationEntry.TABLE_NAME,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    sortOrder);
             // Default exception
-            default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        } else {
+            throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
         // Set a notification URI on the Cursor and return that Cursor
@@ -98,19 +97,16 @@ public class GasStationContentProvider extends ContentProvider {
         // Write URI matching code to identify the match for the gas stations directory
         int match = sUriMatcher.match(uri);
         Uri returnUri; // URI to be returned
-        switch (match) {
-            case GAS_STATION:
-                // Insert new values into the database
-                long id = db.insert(GasStationEntry.TABLE_NAME, null, values);
-                if (id > 0) {
-                    returnUri = ContentUris.withAppendedId(GasStationEntry.CONTENT_URI, id);
-                } else {
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
-                }
-                break;
+        if (match == GAS_STATION) {// Insert new values into the database
+            long id = db.insert(GasStationEntry.TABLE_NAME, null, values);
+            if (id > 0) {
+                returnUri = ContentUris.withAppendedId(GasStationEntry.CONTENT_URI, id);
+            } else {
+                throw new SQLException("Failed to insert row into " + uri);
+            }
             // Default case throws an UnsupportedOperationException
-            default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        } else {
+            throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
         // Notify the resolver if the uri has been changed, and return the newly inserted URI
@@ -171,16 +167,13 @@ public class GasStationContentProvider extends ContentProvider {
         // Keep track of the number of updated gas stations
         int gasStationsUpdated;
 
-        switch (match) {
-            case GAS_STATION_WITH_ID:
-                // Get the gas station ID from the URI path
-                String id = uri.getPathSegments().get(1);
-                // Use selections/selectionArgs to filter for this ID
-                gasStationsUpdated = db.update(GasStationEntry.TABLE_NAME, values, "_id=?", new String[]{id});
-                break;
+        if (match == GAS_STATION_WITH_ID) {// Get the gas station ID from the URI path
+            String id = uri.getPathSegments().get(1);
+            // Use selections/selectionArgs to filter for this ID
+            gasStationsUpdated = db.update(GasStationEntry.TABLE_NAME, values, "_id=?", new String[]{id});
             // Default exception
-            default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        } else {
+            throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
 
         // Notify the resolver of a change and return the number of items updated

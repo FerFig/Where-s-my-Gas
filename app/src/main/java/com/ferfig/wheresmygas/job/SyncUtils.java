@@ -174,9 +174,9 @@ public class SyncUtils {
 
     public static Location getLastLocationFromPreferences(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(Utils.PREFS_NAME, 0);
-        Double gasStationLatitude = Double.longBitsToDouble(
+        double gasStationLatitude = Double.longBitsToDouble(
                 prefs.getLong(Utils.PREF_LAST_KNOWN_LATITUDE, 0));
-        Double gasStationLongitude = Double.longBitsToDouble(
+        double gasStationLongitude = Double.longBitsToDouble(
                 prefs.getLong(Utils.PREF_LAST_KNOWN_LONGITUDE, 0));
         Location location = new Location(LocationManager.GPS_PROVIDER);
         location.setLatitude(gasStationLatitude);
