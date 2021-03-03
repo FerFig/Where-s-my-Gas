@@ -104,12 +104,7 @@ public class Utils {
                                     @NonNull final SnackBarAction mCallback, final SnackBarActions action) {
         Snackbar snackbar = Snackbar
                 .make(container, message, duration)
-                .setAction(actionText, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mCallback.onPerformSnackBarAction(action);
-                    }
-                });
+                .setAction(actionText, view -> mCallback.onPerformSnackBarAction(action));
 
         snackbar.setActionTextColor(Color.RED);
 
@@ -229,6 +224,7 @@ public class Utils {
         return context.getResources().getBoolean(R.bool.isInLandscape);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean userHasRefreshed(@NonNull Context context) {
         boolean mSetting;
         try {
@@ -276,7 +272,7 @@ public class Utils {
     }
 
     public static boolean readBooleanSetting(@NonNull Context context, @NonNull String prefName, boolean defaultValue) {
-        boolean mSetting=false;
+        boolean mSetting;
         try {
             SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
             mSetting = mSettings.getBoolean(prefName, defaultValue);
@@ -284,8 +280,9 @@ public class Utils {
             mSetting = defaultValue;
         }
         return mSetting;
-    };
+    }
 
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     public static String readStringSetting(@NonNull Context context, @NonNull String prefName) {
         String mSetting="";
         try {
@@ -295,7 +292,7 @@ public class Utils {
             mSetting = "";
         }
         return mSetting;
-    };
+    }
 
     public static long readLongSetting(@NonNull Context context, @NonNull String prefName) {
         long mSetting=0;
@@ -306,26 +303,28 @@ public class Utils {
             mSetting = 0;
         }
         return mSetting;
-    };
+    }
 
     public static void saveSetting(@NonNull Context context, @NonNull String prefName, boolean prefValue) {
         SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putBoolean(prefName, prefValue);
         editor.apply();
-    };
+    }
 
+
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     public static void saveSetting(@NonNull Context context, @NonNull String prefName, String prefValue) {
         SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putString(prefName, prefValue);
         editor.apply();
-    };
+    }
 
     public static void saveSetting(@NonNull Context context, @NonNull String prefName, long prefValue) {
         SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putLong(prefName, prefValue);
         editor.apply();
-    };
+    }
 }

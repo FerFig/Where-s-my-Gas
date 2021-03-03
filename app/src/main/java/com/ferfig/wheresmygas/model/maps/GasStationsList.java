@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class GasStationsList implements Parcelable
 {
 
@@ -24,9 +25,6 @@ public class GasStationsList implements Parcelable
     public final static Parcelable.Creator<GasStationsList> CREATOR = new Creator<GasStationsList>() {
 
 
-        @SuppressWarnings({
-            "unchecked"
-        })
         public GasStationsList createFromParcel(Parcel in) {
             return new GasStationsList(in);
         }

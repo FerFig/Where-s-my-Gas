@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Result implements Parcelable
 {
 
@@ -53,10 +54,6 @@ public class Result implements Parcelable
     private String vicinity;
     public final static Parcelable.Creator<Result> CREATOR = new Creator<Result>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public Result createFromParcel(Parcel in) {
             return new Result(in);
         }

@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused", "RedundantSuppression"})
 public class Geometry implements Parcelable
 {
 
@@ -20,9 +20,6 @@ public class Geometry implements Parcelable
     public final static Parcelable.Creator<Geometry> CREATOR = new Creator<Geometry>() {
 
 
-        @SuppressWarnings({
-            "unchecked"
-        })
         public Geometry createFromParcel(Parcel in) {
             return new Geometry(in);
         }

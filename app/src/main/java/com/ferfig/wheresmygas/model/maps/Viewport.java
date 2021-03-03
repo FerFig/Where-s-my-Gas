@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Viewport implements Parcelable
 {
 
@@ -18,10 +19,6 @@ public class Viewport implements Parcelable
     private Southwest southwest;
     public final static Parcelable.Creator<Viewport> CREATOR = new Creator<Viewport>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public Viewport createFromParcel(Parcel in) {
             return new Viewport(in);
         }

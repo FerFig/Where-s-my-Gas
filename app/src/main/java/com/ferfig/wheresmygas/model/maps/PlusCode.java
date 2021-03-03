@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class PlusCode implements Parcelable
 {
 
@@ -18,10 +19,6 @@ public class PlusCode implements Parcelable
     private String globalCode;
     public final static Parcelable.Creator<PlusCode> CREATOR = new Creator<PlusCode>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public PlusCode createFromParcel(Parcel in) {
             return new PlusCode(in);
         }

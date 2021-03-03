@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Photo implements Parcelable
 {
 
@@ -26,10 +27,6 @@ public class Photo implements Parcelable
     private Integer width;
     public final static Parcelable.Creator<Photo> CREATOR = new Creator<Photo>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public Photo createFromParcel(Parcel in) {
             return new Photo(in);
         }

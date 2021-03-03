@@ -1,5 +1,6 @@
 package com.ferfig.wheresmygas.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.view.View;
@@ -18,21 +19,27 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class GasStationViewHolder extends RecyclerView.ViewHolder {
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.gasStationCardView)
     CardView mGasStationCardView;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.tvGasStationName)
     TextView mTvGasStationName;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.tvGasStationAddress)
     TextView mTvGasStationAddress;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.tvGasStationDistance)
     TextView mTvGasStationDistance;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.imgFavorites)
     ImageButton mImgButtonFavorites;
 
+    @SuppressLint("NonConstantResourceId")
     @BindView(R.id.imgDirections)
     ImageButton mImgButtonDirections;
 
@@ -83,18 +90,14 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
         mTvGasStationDistance.setText(gasStationDistance);
 
         mImgButtonDirections.setVisibility(gasStationData.isSelected ? View.VISIBLE : View.GONE);
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if (listener!=null) {
-                    listener.onItemClick(gasStationData);
-                }
+        itemView.setOnClickListener(f -> {
+            if (listener!=null) {
+                listener.onItemClick(gasStationData);
             }
         });
-        mImgButtonDirections.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if (directionsClickListener!=null) {
-                    directionsClickListener.onDirectionsClick(gasStationData);
-                }
+        mImgButtonDirections.setOnClickListener(f -> {
+            if (directionsClickListener!=null) {
+                directionsClickListener.onDirectionsClick(gasStationData);
             }
         });
 

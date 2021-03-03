@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class OpeningHours implements Parcelable
 {
 
@@ -15,10 +16,6 @@ public class OpeningHours implements Parcelable
     private Boolean openNow;
     public final static Parcelable.Creator<OpeningHours> CREATOR = new Creator<OpeningHours>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public OpeningHours createFromParcel(Parcel in) {
             return new OpeningHours(in);
         }

@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Northeast implements Parcelable
 {
 
@@ -18,10 +19,6 @@ public class Northeast implements Parcelable
     private Double lng;
     public final static Parcelable.Creator<Northeast> CREATOR = new Creator<Northeast>() {
 
-
-        @SuppressWarnings({
-            "unchecked"
-        })
         public Northeast createFromParcel(Parcel in) {
             return new Northeast(in);
         }
