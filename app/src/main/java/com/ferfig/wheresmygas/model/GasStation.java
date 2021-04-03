@@ -8,11 +8,9 @@ import android.os.Parcelable;
 
 import com.ferfig.wheresmygas.model.maps.Result;
 
-/* class to store favorite gas stations */
 @SuppressWarnings({"unused", "RedundantSuppression"})
 public class GasStation implements Parcelable {
 
-    public boolean isSelected;
     private String mId;
     private String mName;
     private String mImageUrl;

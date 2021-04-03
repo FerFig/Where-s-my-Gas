@@ -63,7 +63,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
             gasStationDistance = Utils.formatDistance(context,
                     gasStationData.getDistanceTo(lastKnownLocation));
         }
-        if (gasStationData.isSelected)
+        if (gasStationData.getPlaceId().equals(GasStationsAdapter.getSelectedGasStationPlaceId()))
             mGasStationCardView.setBackgroundResource(R.color.colorCardViewSelected);
         else {
             mGasStationCardView.setBackgroundResource(R.color.colorCardViewBackground);
@@ -89,7 +89,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
         mTvGasStationAddress.setText(gasStationAddress);
         mTvGasStationDistance.setText(gasStationDistance);
 
-        mImgButtonDirections.setVisibility(gasStationData.isSelected ? View.VISIBLE : View.GONE);
+        mImgButtonDirections.setVisibility(gasStationData.getPlaceId().equals(GasStationsAdapter.getSelectedGasStationPlaceId()) ? View.VISIBLE : View.GONE);
         itemView.setOnClickListener(f -> {
             if (listener!=null) {
                 listener.onItemClick(gasStationData);

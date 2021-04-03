@@ -2,7 +2,6 @@ package com.ferfig.wheresmygas.ui.adapter;
 
 import android.content.Context;
 import android.location.Location;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +20,11 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     private final Context mContext;
 
-    private final Location mLastKnownLocation;
+    private static Location mLastKnownLocation;
 
     private final List<GasStation> mData;
-    public List<GasStation> getData() {
-        return mData;
-    }
+
+    private static String mSelectedGasStation;
 
     private final ArrayList<GasStation> mFavoriteGasStations;
 
@@ -55,7 +53,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
         this.mContext = context;
         this.mData = gasStationDataList;
         this.mFavoriteGasStations = favoriteGasStations;
-        this.mLastKnownLocation = lastKnownLocation;
+        mLastKnownLocation = lastKnownLocation;
         this.itemClickListener = gasStationClickListener;
         this.favoritesClickListener = gasStationFavoritesClickListener;
         this.directionsClickListener = gasStationDirectionsClickListener;
@@ -71,7 +69,6 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull GasStationViewHolder holder, int position) {
-        Log.d(Utils.TAG, "Gas Station: " + mData.get(position).getName() + " ( " + position + " = " + String.valueOf(getItemCount()-1) + " )");
         holder.bind(mContext, mData.get(position), mLastKnownLocation,
                 itemClickListener, favoritesClickListener, directionsClickListener,
                 Utils.isFavoriteGasStation(mData.get(position).getPlaceId(), mFavoriteGasStations));
@@ -80,5 +77,20 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     @Override
     public int getItemCount() {
         return mData.size();
+    }
+
+    public List<GasStation> getData() {
+        if (mData == null ) {
+            return new ArrayList<>();
+        }
+        return mData;
+    }
+
+    public static String getSelectedGasStationPlaceId() {
+        return mSelectedGasStation;
+    }
+
+    public static void setSelectedGasStationPlaceId(String gasStationID) {
+        GasStationsAdapter.mSelectedGasStation = gasStationID;
     }
 }
