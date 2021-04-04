@@ -22,6 +22,23 @@
         <item>3</item>
     </string-array>
 
+    <string name="pref_darkmode">@string/pref_darkmode_label</string>
+    <string-array name="pref_darkmode_option">
+        <item>@string/pref_darkmode_use_system</item>
+        <item>@string/pref_darkmode_use_disable</item>
+        <item>@string/pref_darkmode_use_enable</item>
+    </string-array>
+    <!-- values must match @SettingOptions -->
+    <string-array name="pref_darkmode_values">
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+
     <string name="pref_show_about">@string/pref_about_label</string>
     <string name="pref_about_option">@string/pref_about_summary</string>
+    <string name="pref_darkmode_label">Dark Theme</string>
+    <string name="pref_darkmode_use_system">Use system settings</string>
+    <string name="pref_darkmode_use_disable">Disabled</string>
+    <string name="pref_darkmode_use_enable">Enabled</string>
 </resources>

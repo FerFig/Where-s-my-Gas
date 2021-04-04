@@ -15,6 +15,13 @@
         app:entryValues="@array/pref_show_info_values"
         app:defaultValue="0"/>
 
+    <ListPreference
+        app:key="@string/pref_darkmode"
+        app:title="@string/pref_darkmode"
+        app:entries="@array/pref_darkmode_option"
+        app:entryValues="@array/pref_darkmode_values"
+        app:defaultValue="4"/>
+
     <PreferenceCategory app:title="@string/pref_about_label">
         <Preference
             app:key="@string/pref_about_label"

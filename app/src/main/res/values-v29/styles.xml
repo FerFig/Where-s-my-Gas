@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
+
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-    <!--<style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
+        <!--<style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
+        <item name="android:forceDarkAllowed">true</item>
+
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -15,6 +17,7 @@
 
     <style name="AppThemeDark" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!--<style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">-->
+        <item name="android:forceDarkAllowed">true</item>
 
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -26,15 +29,4 @@
         <item name="coordinatorLayoutStyle">@style/Widget.Support.CoordinatorLayout</item>
     </style>
 
-    <style name="ShareFabSelectLocation" parent="@style/AppTheme">
-        <item name="android:layout_width">56dp</item>
-        <item name="android:layout_height">56dp</item>
-        <item name="android:src">@drawable/ic_place_24dp</item>
-        <item name="android:translationZ">@dimen/fab_translation_z</item>
-        <item name="borderWidth">0dp</item>
-        <item name="rippleColor">@color/colorPrimaryLight</item>
-        <item name="elevation">@dimen/fab_elevation</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:layout_marginEnd">16dp</item>
-    </style>
 </resources>

@@ -5,68 +5,61 @@
     android:id="@+id/mainActivityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".ui.MainActivity">
 
     <include layout="@layout/appbar" />
 
-    <LinearLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/fragmentMap"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.5" />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_refresh_layout"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            app:layout_constraintVertical_bias="0.436"
-            android:focusable="false">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.55"
+                android:orientation="horizontal">
 
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <LinearLayout
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/fragmentMap"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.45">
+
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/swipe_refresh_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_constraintVertical_bias="0.436"
+                    android:focusable="false">
+
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvNearbyPlaces"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="top"
-                    android:orientation="vertical">
+                    android:paddingBottom="16dp"
+                    android:clipToPadding="false"
+                    android:nextFocusUp="@id/fabActionSelectLocation"/>
 
-                    <TextView
-                        android:id="@+id/tvSwipeRefreshMsg"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="casual"
-                        android:gravity="center"
-                        android:paddingBottom="1dp"
-                        android:paddingTop="4dp"
-                        android:text="@string/swipe_to_refresh"
-                        android:visibility="gone"
-                        android:textSize="12sp"
-                        android:focusable="false"/>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvNearbyPlaces"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="16dp"
-                        android:clipToPadding="false"
-                        android:nextFocusUp="@id/fabActionSelectLocation"/>
-
-                </LinearLayout>
-            </ScrollView>
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-    </LinearLayout>
+               </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabActionSelectLocation"

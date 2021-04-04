@@ -5,68 +5,61 @@
     android:id="@+id/mainActivityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".ui.MainActivity">
 
     <include layout="@layout/appbar" />
 
-    <LinearLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:orientation="vertical">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/fragmentMap"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.55" />
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:orientation="vertical">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_refresh_layout"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.45"
-            app:layout_constraintTop_toBottomOf="@+id/fragmentMap"
-            android:focusable="false">
-
-            <ScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="0dp"
+                android:layout_weight="0.55"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/fragmentMap"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvSwipeRefreshMsg"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top"
-                        android:fontFamily="casual"
-                        android:gravity="center"
-                        android:paddingBottom="1dp"
-                        android:paddingTop="3dp"
-                        android:text="@string/swipe_to_refresh"
-                        android:visibility="invisible"
-                        android:textSize="12sp"
-                        android:focusable="false"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.45">
+
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/swipe_refresh_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:focusable="false"
+                    app:layout_constraintTop_toBottomOf="@+id/fragmentMap">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvNearbyPlaces"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="16dp"
+                        android:layout_height="match_parent"
                         android:clipToPadding="false"
-                        android:nextFocusUp="@id/fabActionSelectLocation" />
-                </LinearLayout>
-            </ScrollView>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                        android:nextFocusUp="@id/fabActionSelectLocation"
+                        android:paddingTop="24dp"
+                        android:paddingBottom="16dp" />
 
-    </LinearLayout>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabActionSelectLocation"

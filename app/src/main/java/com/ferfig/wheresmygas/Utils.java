@@ -48,15 +48,12 @@ public class Utils {
     public static final String STORE_LAST_PICKED_LOCATION = "wmg_last_picked_location";
     public static final String STORE_FAVORITE_GAS_STATIONS = "wmg_favorites";
     public static final String STORE_SELECTED_GAS_STATION = "wmg_selected_gas_station";
-    public static final String STORE_SWIPE_MSG_VISIBILITY = "wmg_swipe_feedback";
 
     public static final int MAP_DEFAULT_ZOOM = 15;
 
     public static final long MAP_DEFAULT_SEARCH_RADIUS = 2500;
 
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-
-    private static final String USER_SWIPED_REFRESH = "wsg_user_refreshed";
 
     // Shared Preferences
     public static final String PREFS_NAME = "com.ferfig.wheresmygas.preferences";
@@ -119,23 +116,31 @@ public class Utils {
         StringBuilder stringBuilder = new StringBuilder();
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        int unitPreference = Integer.parseInt(
+        String unitPreference =
                 sharedPreferences.getString(context.getString(R.string.pref_units),
-                        String.valueOf(SettingOption.UNITS_METRIC.getValue())));
+                        SettingOption.UNITS_METRIC);
 
-        if (unitPreference == SettingOption.UNITS_IMPERIAL.getValue()) {
+        if (unitPreference.equals(SettingOption.UNITS_IMPERIAL)) {
             float miles = distance * 0.000621371192f;
-            decimalFormat = new DecimalFormat("0.00");
-            stringBuilder.append(decimalFormat.format(miles));
-            stringBuilder.append("mi");
+            float yards = miles * 1760;
+            if ( yards  < 1000 ){
+                decimalFormat = new DecimalFormat("0 ");
+                stringBuilder.append(decimalFormat.format(yards));
+                stringBuilder.append("yd");
+            }
+            else {
+                decimalFormat = new DecimalFormat("0.00 ");
+                stringBuilder.append(decimalFormat.format(miles));
+                stringBuilder.append("mi");
+            }
         }
         else { // Metric
             if (distance < 1000) {
-                decimalFormat = new DecimalFormat("0");
+                decimalFormat = new DecimalFormat("0 ");
                 stringBuilder.append(decimalFormat.format(distance));
                 stringBuilder.append("m");
             } else {
-                decimalFormat = new DecimalFormat("0.0");
+                decimalFormat = new DecimalFormat("0.00 ");
                 stringBuilder.append(decimalFormat.format(distance / 1000));
                 stringBuilder.append("km");
             }
@@ -191,7 +196,7 @@ public class Utils {
          */
         ActivityCompat.requestPermissions(activity,
                 new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                Utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
     }
 
     public static Location getLastKnownLocation(@NonNull Context contextActivity) {
@@ -222,25 +227,6 @@ public class Utils {
 
     public static boolean isDeviceInLandscape(@NonNull Context context){
         return context.getResources().getBoolean(R.bool.isInLandscape);
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean userHasRefreshed(@NonNull Context context) {
-        boolean mSetting;
-        try {
-            SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
-            mSetting = mSettings.getBoolean(USER_SWIPED_REFRESH, false);
-        } catch (Exception e) {
-            mSetting = false;
-        }
-        return mSetting;
-    }
-
-    public static void setUserHasRefreshed(@NonNull Context context) {
-        SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = mSettings.edit();
-        editor.putBoolean(USER_SWIPED_REFRESH, true);
-        editor.apply();
     }
 
     public static void alertBuilder(@NonNull Context context, @NonNull String message,
@@ -284,23 +270,30 @@ public class Utils {
 
     @SuppressWarnings({"unused", "RedundantSuppression"})
     public static String readStringSetting(@NonNull Context context, @NonNull String prefName) {
-        String mSetting="";
+        return readStringSetting(context, prefName, "");
+    }
+
+    public static String readStringSetting(@NonNull Context context, @NonNull String prefName, String defaultValue) {
         try {
             SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
-            mSetting = mSettings.getString(prefName, mSetting);
+            defaultValue = mSettings.getString(prefName, defaultValue);
         } catch (Exception e) {
-            mSetting = "";
+            Log.d(TAG, "readStringSetting: " + e.getMessage());;
         }
-        return mSetting;
+        return defaultValue;
     }
 
     public static long readLongSetting(@NonNull Context context, @NonNull String prefName) {
-        long mSetting=0;
+        return readLongSetting(context, prefName, 0);
+    }
+
+    public static long readLongSetting(@NonNull Context context, @NonNull String prefName, long defaultValue) {
+        long mSetting;
         try {
             SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
-            mSetting = mSettings.getLong(prefName, mSetting);
+            mSetting = mSettings.getLong(prefName, defaultValue);
         } catch (Exception e) {
-            mSetting = 0;
+            mSetting = defaultValue;
         }
         return mSetting;
     }
@@ -326,5 +319,11 @@ public class Utils {
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putLong(prefName, prefValue);
         editor.apply();
+    }
+
+    public static boolean isDarkModeActive(Context context) {
+        String darkPref = context.getString(R.string.UseSystemDarkMode);
+        Log.w(TAG, "isDarkModeEnabled: darkPref = " + darkPref );
+        return (darkPref.equals("Yes"));
     }
 }

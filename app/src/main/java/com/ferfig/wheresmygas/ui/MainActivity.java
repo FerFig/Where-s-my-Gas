@@ -2,10 +2,10 @@ package com.ferfig.wheresmygas.ui;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
@@ -18,16 +18,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -46,12 +47,8 @@ import com.ferfig.wheresmygas.provider.GasStationsAsyncLoader;
 import com.ferfig.wheresmygas.ui.adapter.GasStationsAdapter;
 import com.ferfig.wheresmygas.ui.settings.SettingOption;
 import com.ferfig.wheresmygas.ui.settings.SettingsActivity;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -61,16 +58,24 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -81,6 +86,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static android.content.res.Configuration.*;
+
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>>
         , SwipeRefreshLayout.OnRefreshListener
@@ -88,6 +95,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final int REQUEST_ACTIVATION_RESULT = 27;
     private static final int REQUEST_PICK_LOCATION_RESULT = 63;
+    private static final String TAG = Utils.TAG;
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
 
@@ -111,10 +119,9 @@ public class MainActivity extends AppCompatActivity
 
     private boolean mIsRefreshing = false;
 
-    int mShowInfoWindow = SettingOption.SHOW_INFO_WINDOW.getValue();
-    int mDisplayUnits = SettingOption.UNITS_METRIC.getValue();
-
-    private String mSelectedGasStation;
+    String mShowInfoWindow = SettingOption.SHOW_INFO_WINDOW;
+    String mDisplayUnits = SettingOption.UNITS_METRIC;
+    String mDarkMode = SettingOption.DARKMODE_USE_SYSTEM;
 
     @SuppressLint("NonConstantResourceId")
     @BindView(R.id.app_bar)
@@ -123,10 +130,6 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint("NonConstantResourceId")
     @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSrlNearbyPlaces;
-
-    @SuppressLint("NonConstantResourceId")
-    @BindView(R.id.tvSwipeRefreshMsg)
-    TextView mTvSwipeRefreshMsg;
 
     @SuppressLint("NonConstantResourceId")
     @BindView(R.id.fabActionSelectLocation)
@@ -139,8 +142,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.w(TAG, "onCreate: START");
 
-        boolean isSwipeMsgVisible = false;
         if (savedInstanceState != null) {
             mLastKnowDeviceLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_KNOW_LOCATION);
             mSearchAreaRadius = savedInstanceState.getLong(Utils.STORE_SEARCH_AREA_RADIUS);
@@ -149,8 +152,7 @@ public class MainActivity extends AppCompatActivity
             mGasStationsList = savedInstanceState.getParcelable(Utils.STORE_GAS_STATIONS);
             mLastPickedLocation = savedInstanceState.getParcelable(Utils.STORE_LAST_PICKED_LOCATION);
             mFavoriteGasStations = savedInstanceState.getParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS);
-            mSelectedGasStation = savedInstanceState.getString(Utils.STORE_SELECTED_GAS_STATION);
-            isSwipeMsgVisible = savedInstanceState.getBoolean(Utils.STORE_SWIPE_MSG_VISIBILITY, false);
+            GasStationsAdapter.setSelectedGasStationPlaceId(savedInstanceState.getString(Utils.STORE_SELECTED_GAS_STATION));
         }
 
         setContentView(R.layout.activity_main);
@@ -169,19 +171,18 @@ public class MainActivity extends AppCompatActivity
         // Construct a FusedLocationProviderClient to get Last Know Location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // Initialize the Places API
+        if (!Places.isInitialized())
+            Places.initialize(getApplicationContext(), getString(R.string.google_api_key));
+
         // Build the map.
         SupportMapFragment fragmentMap = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.fragmentMap);
-        fragmentMap.getMapAsync(this);
+        if (fragmentMap != null ) fragmentMap.getMapAsync(this);
 
         if (savedInstanceState == null) {
             // Retrieve favorite stations
             getDataFromLocalDB();
-        }
-        else{
-            if (isSwipeMsgVisible) {
-                mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
-            }
         }
 
         // Schedule the firebase job service to update widget data
@@ -193,19 +194,25 @@ public class MainActivity extends AppCompatActivity
         } catch (final Exception ex) {
             ex.printStackTrace();
         }
+        Log.w(TAG, "onCreate: END");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        Log.w(TAG, "onDestroy: START");
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
 
+        //Deinitialize The Places API
+        if (Places.isInitialized())
+            Places.deinitialize();
+        Log.w(TAG, "onDestroy: END");
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.w(TAG, "onSaveInstanceState: START");
         if (mMap != null) {
             outState.putParcelable(Utils.STORE_LAST_KNOW_LOCATION, mLastKnowDeviceLocation);
             outState.putParcelable(Utils.STORE_MAP_CAMERA_POSITION, mMap.getCameraPosition());
@@ -214,43 +221,49 @@ public class MainActivity extends AppCompatActivity
             outState.putParcelable(Utils.STORE_GAS_STATIONS, mGasStationsList);
             outState.putParcelable(Utils.STORE_LAST_PICKED_LOCATION, mLastPickedLocation);
             outState.putParcelableArrayList(Utils.STORE_FAVORITE_GAS_STATIONS, mFavoriteGasStations);
-            outState.putString(Utils.STORE_SELECTED_GAS_STATION, mSelectedGasStation);
-            outState.putBoolean(Utils.STORE_SWIPE_MSG_VISIBILITY,
-                    mTvSwipeRefreshMsg.getVisibility()==View.VISIBLE);
+            outState.putString(Utils.STORE_SELECTED_GAS_STATION, GasStationsAdapter.getSelectedGasStationPlaceId());
         }
         super.onSaveInstanceState(outState);
+        Log.w(TAG, "onSaveInstanceState: END");
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.w(TAG, "onCreateOptionsMenu: START");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.app_menu, menu);
-        if (mShowInfoWindow==SettingOption.HIDE_INFO_WINDOW.getValue()){
+        if (mShowInfoWindow == SettingOption.HIDE_INFO_WINDOW){
             MenuItem infoItem = menu.findItem(R.id.menu_info);
             if (infoItem != null) {
                 infoItem.setVisible(false);
             }
         }
+        Log.w(TAG, "onCreateOptionsMenu: END");
         return true;
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.w(TAG, "onOptionsItemSelected: START");
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.menu_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
+                Log.w(TAG, "onOptionsItemSelected: END");
                 return true;
             case R.id.menu_info:
                 showInfoWindow();
+                Log.w(TAG, "onOptionsItemSelected: END");
                 return true;
             default:
+                Log.w(TAG, "onOptionsItemSelected: END");
                 return super.onOptionsItemSelected(item);
         }
     }
 
     private void showInfoWindow() {
+        Log.w(TAG, "showInfoWindow: START");
         final Dialog infoWindow = new Dialog(this);
         infoWindow.setContentView(R.layout.info_window);
         Window dialogWindow = infoWindow.getWindow();
@@ -261,10 +274,12 @@ public class MainActivity extends AppCompatActivity
         ConstraintLayout infoWindowLayout = infoWindow.findViewById(R.id.info_window);
         infoWindowLayout.setOnClickListener(f -> infoWindow.dismiss());
         infoWindow.show();
+        Log.w(TAG, "showInfoWindow: END");
     }
 
     @Override
     public void onPerformSnackBarAction(SnackBarActions action) {
+        Log.w(TAG, "onPerformSnackBarAction: START" );
         switch (action) {
             case RETRY_CONNECTION:
                 onMapReady(mMap);
@@ -291,10 +306,12 @@ public class MainActivity extends AppCompatActivity
                         new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS),
                         REQUEST_ACTIVATION_RESULT);
         }
+        Log.w(TAG, "onPerformSnackBarAction: END");
     }
 
     @Override
     public void onRefresh() {
+        Log.w(TAG, "onRefresh: START");
         if (Utils.noInternetIsAvailable(this)) {
             Utils.showSnackBar(findViewById(android.R.id.content),
                     getString(R.string.sb_text_no_internet_connectivity),
@@ -305,35 +322,26 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        if (!Utils.userHasRefreshed(getApplicationContext())) {
-            //only show refresh textview the first time
-            Utils.setUserHasRefreshed(getApplicationContext());
-
-            if (Utils.isDeviceInLandscape(this)) {
-                mTvSwipeRefreshMsg.setVisibility(View.GONE);
-            }
-            else{
-                mTvSwipeRefreshMsg.setVisibility(View.INVISIBLE);
-            }
-        }
-
         mIsRefreshing = true;
         mSrlNearbyPlaces.setRefreshing(true);
 
         getNearbyGasStations(false);
+        Log.w(TAG, "onRefresh: END" );
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.w(TAG, "onActivityResult: START" );
         switch (requestCode) {
             case REQUEST_ACTIVATION_RESULT:
                 onMapReady(mMap);
                 break;
             case REQUEST_PICK_LOCATION_RESULT:
                 if (resultCode == RESULT_OK){
-                    Place place = PlacePicker.getPlace(this, data);
-                    if (place == null) {
+                    Place place = Autocomplete.getPlaceFromIntent(data);
+                    //Place place = PlacePicker.getPlace(this, data);
+                    if (place.getId() == null) {
                         Utils.showSnackBar(findViewById(android.R.id.content),
                                 getString(R.string.sb_text_no_place_selected),
                                 Snackbar.LENGTH_SHORT);
@@ -355,9 +363,11 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
         }
+        Log.w(TAG, "onActivityResult: END" );
     }
 
     private void getNearbyGasStations(boolean bSearchWiderArea){
+        Log.w(TAG, "getNearbyGasStations: START" );
         if (Utils.noInternetIsAvailable(this)) {
             updateRefreshingUi();
 
@@ -367,6 +377,7 @@ public class MainActivity extends AppCompatActivity
                     Snackbar.LENGTH_INDEFINITE,
                     MainActivity.this,
                     SnackBarActions.RETRY_CONNECTION);
+            Log.w(TAG, "getNearbyGasStations: END" );
             return;
         }
 
@@ -390,6 +401,7 @@ public class MainActivity extends AppCompatActivity
                         Snackbar.LENGTH_INDEFINITE,
                         MainActivity.this,
                         SnackBarActions.SELECT_LOCATION);
+                Log.w(TAG, "getNearbyGasStations: END" );
                 return;
             }
         }
@@ -418,6 +430,7 @@ public class MainActivity extends AppCompatActivity
         gasStationsCall.enqueue(new Callback<GasStationsList>() {
             @Override
             public void onResponse(@NonNull Call<GasStationsList> call, @NonNull Response<GasStationsList> response) {
+                Log.w(TAG, "onResponse: START");
                 updateRefreshingUi();
 
                 if (response.code() == 200) {
@@ -459,10 +472,12 @@ public class MainActivity extends AppCompatActivity
                             MainActivity.this,
                             SnackBarActions.RETRY_GET_NEARBY_STATIONS);
                 }
+                Log.w(TAG, "onResponse: END" );
             }
 
             @Override
             public void onFailure(@NonNull Call<GasStationsList> call, @NonNull Throwable t) {
+                Log.w(TAG, "onFailure: START" );
                 updateRefreshingUi();
                 Utils.showSnackBar(findViewById(android.R.id.content),
                         getString(R.string.sb_text_error_failed_network_request),
@@ -470,8 +485,10 @@ public class MainActivity extends AppCompatActivity
                         Snackbar.LENGTH_INDEFINITE,
                         MainActivity.this,
                         SnackBarActions.RETRY_GET_NEARBY_STATIONS);
+                Log.w(TAG, "onFailure: END" );
             }
         });
+        Log.w(TAG, "getNearbyGasStations: END" );
     }
 
     private void updateRefreshingUi() {
@@ -482,15 +499,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void addStationsToMap(List<Result> gasStationListResult, boolean bFocusStations) {
+        Log.w(TAG, "addStationsToMap: START" );
         mMap.clear(); //remove any previous added marker...
         mMarkers.clear();
 
         LatLngBounds.Builder markersBounds = new LatLngBounds.Builder(); //store markers bounds
 
-        //TODO: is mLastKnowDeviceLocation is null -- avoid crash
-        //Also add the current location bounds so it doesn't disappear from the map
-        markersBounds.include(new LatLng(mLastKnowDeviceLocation.getLatitude(),
-                mLastKnowDeviceLocation.getLongitude()));
+        if (mLastKnowDeviceLocation != null) {
+            //Also add the current location bounds so it doesn't disappear from the map
+            markersBounds.include(new LatLng(mLastKnowDeviceLocation.getLatitude(),
+                    mLastKnowDeviceLocation.getLongitude()));
+        }
 
         // Store GasStations list to show in recycle view adapter
         List<GasStation> gasStationList = new ArrayList<>();
@@ -503,7 +522,7 @@ public class MainActivity extends AppCompatActivity
             Location gasLocation = new Location(LocationManager.GPS_PROVIDER);
             gasLocation.setLatitude(gasLat);
             gasLocation.setLongitude(gasLon);
-            distance = gasLocation.distanceTo(mLastKnowDeviceLocation); // meters
+            distance = (mLastKnowDeviceLocation == null ? 0 : gasLocation.distanceTo(mLastKnowDeviceLocation) ); // meters
 
             String gasStationImageUrl;
             gasStationImageUrl = gasStation.getIcon();
@@ -524,18 +543,14 @@ public class MainActivity extends AppCompatActivity
 
             mMarkers.add(newMarker);
 
-            GasStation newGasStation = new GasStation(
+            gasStationList.add(new GasStation(
                     gasStation.getPlaceId(),
                     gasStation.getName(),
                     gasStationImageUrl,
                     gasLat,
                     gasLon,
                     gasStation.getVicinity(),
-                    gasStation);
-
-            newGasStation.isSelected = newGasStation.getPlaceId().equals(mSelectedGasStation);
-
-            gasStationList.add(newGasStation);
+                    gasStation));
         }
 
         // when from savedInstanceState keep the camera at that position
@@ -543,19 +558,21 @@ public class MainActivity extends AppCompatActivity
             LatLngBounds allBounds = markersBounds.build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(allBounds, 80);
             //mMap.moveCamera(cameraUpdate);
-            mMap.animateCamera(cameraUpdate);
+            if (mMap != null ) mMap.animateCamera(cameraUpdate);
         }
 
         addStationsToRecyclerView(gasStationList);
+        Log.w(TAG, "addStationsToMap: END" );
     }
 
     @SuppressLint("WrongConstant")
     private void addStationsToRecyclerView(List<GasStation> gasStationList) {
+        Log.w(TAG, "addStationsToRecyclerView: START" );
         GasStationsAdapter mainGasStationsAdapter = new GasStationsAdapter(this,
                 gasStationList,
                 mFavoriteGasStations,
                 mLastKnowDeviceLocation,
-                gasStationData -> selectGasStation(gasStationData, gasStationList),
+                this::selectGasStationOnMap,
                 gasStationData -> {
                     if (Utils.isFavoriteGasStation(gasStationData.getPlaceId(), mFavoriteGasStations)) {
                         removeFromFavorites(gasStationData);
@@ -590,9 +607,11 @@ public class MainActivity extends AppCompatActivity
                 false));
 
         mRvNearbyPlaces.setAdapter(mainGasStationsAdapter);
+        Log.w(TAG, "addStationsToRecyclerView: END" );
     }
 
     private void startDirectionsToGasStation(GasStation gasStationData) {
+        Log.w(TAG, "startDirectionsToGasStation: START" );
         Intent mDirectionsIntent = Utils.buildDirectionsToIntent(gasStationData,
                 true); // try to open turn by turn in google maps -- for Google credits ;)
         if (mDirectionsIntent.resolveActivity(getPackageManager()) != null) {
@@ -607,35 +626,38 @@ public class MainActivity extends AppCompatActivity
                         Snackbar.LENGTH_LONG);
             }
         }
+        Log.w(TAG, "startDirectionsToGasStation: END" );
     }
 
-    private void selectGasStation(GasStation gasStationData, List<GasStation> gasStationList) {
-        for (GasStation gs : gasStationList) {
-            gs.isSelected = false;
-        }
+    private void selectGasStationOnMap(GasStation gasStationData) {
+        Log.w(TAG, "selectGasStationOnMap: START" );
         for (Marker marker : mMarkers) {
             Result gasStation = (Result)marker.getTag();
             if (gasStation != null){
                 if (gasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
-                    gasStationData.isSelected = true;
-                    mSelectedGasStation = gasStation.getPlaceId();
+                    GasStationsAdapter.setSelectedGasStationPlaceId(gasStationData.getPlaceId());
                     marker.showInfoWindow();
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(
                             marker.getPosition()));
+                    Log.w(TAG, "selectGasStationOnMap: mMap.animateCamera");
                     break;
                 }
             }
         }
+        Log.w(TAG, "selectGasStationOnMap: notifyDataSetChanged");
         mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
+        Log.w(TAG, "selectGasStationOnMap: END" );
     }
 
     private void refreshFavoritesUi() {
+        Log.w(TAG, "refreshFavoritesUi: START" );
         // refresh markers on map
         for (Marker marker:mMarkers) {
             updateMarkerUi(marker);
         }
         // force refresh of recycler view layout
-        mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
+        // mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
+        Log.w(TAG, "refreshFavoritesUi: END" );
     }
 
     private void updateMarkerUi(Marker marker) {
@@ -661,9 +683,12 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.w(TAG, "onMapReady: START");
         updateRefreshingUi();
 
         mMap = googleMap;
+
+        refreshMapTheme();
 
 //        // Use a custom info window adapter to handle multiple lines of text in the
 //        // info window contents.
@@ -724,10 +749,26 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+        Log.w(TAG, "onMapReady: END");
+    }
+
+    private void refreshMapTheme() {
+        try {
+            if (Utils.isDarkModeActive(this)) {
+                if (mMap != null)
+                    mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_dark_style));
+            } else {
+                if (mMap != null)
+                    mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clear_style));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.w(TAG, "onRequestPermissionsResult: START" );
         mLocationPermissionGranted = false;
         if (requestCode == Utils.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0
@@ -746,9 +787,11 @@ public class MainActivity extends AppCompatActivity
                     MainActivity.this,
                     SnackBarActions.REQUEST_PERMISSIONS);
         }
+        Log.w(TAG, "onRequestPermissionsResult: END" );
     }
 
     private void resumeAppLoading(){
+        Log.w(TAG, "resumeAppLoading: START" );
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
@@ -766,12 +809,14 @@ public class MainActivity extends AppCompatActivity
                 getNearbyGasStations(false);
             }
         }
+        Log.w(TAG, "resumeAppLoading: END" );
     }
 
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
     private void updateLocationUI() {
+        Log.w(TAG, "updateLocationUI: START" );
         if (mMap == null) {
             return;
         }
@@ -807,10 +852,6 @@ public class MainActivity extends AppCompatActivity
                     currentLocation.setLongitude(mMap.getCameraPosition().target.longitude);
                     if (currentLocation.distanceTo(mSearchLocation) > (mSearchAreaRadius == 0 ? Utils.MAP_DEFAULT_SEARCH_RADIUS : mSearchAreaRadius)) {
                         mSearchLocation = currentLocation;
-
-                        if (!Utils.userHasRefreshed(getApplicationContext())) {
-                            mTvSwipeRefreshMsg.setVisibility(View.VISIBLE);
-                        }
                     }
                 }
             });
@@ -819,26 +860,32 @@ public class MainActivity extends AppCompatActivity
                 Result gasStationData = (Result) marker.getTag();
                 if (gasStationData != null) {
                     // make sure that the corresponding item is visible in recycler view
-                    LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
                     GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
-                    List<GasStation> gasStationInAdapter = gasStationAdapter.getData();
-                    int position = 0;
-                    for (GasStation adapterGasStation : gasStationInAdapter) {
-                        if (adapterGasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
-//                                RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getApplicationContext()) {
-//                                    @Override protected int getVerticalSnapPreference() {
-//                                        return LinearSmoothScroller.SNAP_TO_START;
-//                                    }
-//                                };
-//                                smoothScroller.setTargetPosition(position);
-//                                linearLayoutManager.startSmoothScroll(smoothScroller);
-
-                            selectGasStation(adapterGasStation, gasStationInAdapter);
-
-                            linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, null, position);
-                            break;
+                    if (gasStationAdapter!= null) {
+                        List<GasStation> gasStationsInAdapter = gasStationAdapter.getData();
+                        int position = 0;
+                        for (GasStation adapterGasStation : gasStationsInAdapter) {
+                            if (adapterGasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
+                                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
+                                if (linearLayoutManager != null) {
+                                    RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(mRvNearbyPlaces.getContext()) {
+                                        @Override
+                                        protected int getVerticalSnapPreference() {
+                                            return LinearSmoothScroller.SNAP_TO_ANY;
+                                        }
+                                    };
+                                    smoothScroller.setTargetPosition(position);
+                                    linearLayoutManager.startSmoothScroll(smoothScroller);
+                                    //linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, new RecyclerView.State(), position);
+                                    //linearLayoutManager.scrollToPositionWithOffset(position, 0);
+                                }
+                                GasStationsAdapter.setSelectedGasStationPlaceId(gasStationData.getPlaceId());
+                                Log.w(TAG, "updateLocationUI: onMarkerClick - position: ".concat(String.valueOf(position)) );
+                                gasStationAdapter.notifyDataSetChanged();
+                                break;
+                            }
+                            position++;
                         }
-                        position++;
                     }
                 }
                 return false;
@@ -846,6 +893,7 @@ public class MainActivity extends AppCompatActivity
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+        Log.w(TAG, "updateLocationUI: END" );
     }
 
     /**
@@ -856,6 +904,7 @@ public class MainActivity extends AppCompatActivity
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
+        Log.w(TAG, "getDeviceLocation: START" );
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
@@ -890,29 +939,34 @@ public class MainActivity extends AppCompatActivity
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+        Log.w(TAG, "getDeviceLocation: END" );
     }
 
     @OnClick({R.id.fabActionSelectLocation})
     public void fabClick(View view) {
+        Log.w(TAG, "fabClick: START" );
         selectLocation();
+        Log.w(TAG, "fabClick: END" );
     }
 
     private void selectLocation() {
+        Log.w(TAG, "selectLocation: START" );
         if (Utils.hasLocationPermission(this)) {
             boolean activityStarted = false;
             try {
-                //TODO: replace placebuilder with new API
-                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                Intent intent = builder.build(this);
-
-                if (mLastPickedLocation != null) builder.setLatLngBounds(mLastPickedLocation);
+                List<Place.Field> placeFields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.VIEWPORT, Place.Field.ADDRESS, Place.Field.BUSINESS_STATUS);
+                Intent intent;
+                if (mLastPickedLocation == null) {
+                    intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, placeFields)
+                            .build(this);
+                }else{
+                    intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, placeFields)
+                            .setLocationBias(RectangularBounds.newInstance(mLastPickedLocation.southwest, mLastPickedLocation.northeast))
+                            .build(this);
+                }
 
                 startActivityForResult(intent, REQUEST_PICK_LOCATION_RESULT);
                 activityStarted = true;
-            } catch (GooglePlayServicesRepairableException e) {
-                Log.e(Utils.TAG, String.format("GooglePlayServices Inconsistent State [%s]", e.getMessage()));
-            } catch (GooglePlayServicesNotAvailableException e) {
-                Log.e(Utils.TAG, String.format("GooglePlayServices Not Available [%s]", e.getMessage()));
             } catch (Exception e) {
                 Log.e(Utils.TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
             } finally {
@@ -930,16 +984,20 @@ public class MainActivity extends AppCompatActivity
                     MainActivity.this,
                     SnackBarActions.REQUEST_PERMISSIONS);
         }
+        Log.w(TAG, "selectLocation: END" );
     }
 
     private void addToFavorites(GasStation gasStation){
+        Log.w(TAG, "addToFavorites: START" );
         // save favorites to DB using the content provider
         if (DbUtils.addGasStationToDB(getApplicationContext(), gasStation)){
             mFavoriteGasStations.add(gasStation);
         }
+        Log.w(TAG, "addToFavorites: END" );
     }
 
     private void removeFromFavorites(GasStation gasStation) {
+        Log.w(TAG, "removeFromFavorites: START" );
         // delete favorites from DB using the content provider
         if (DbUtils.deleteGasStationFromDB(getApplicationContext(), gasStation)) {
 
@@ -950,10 +1008,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+        Log.w(TAG, "removeFromFavorites: END" );
     }
 
     public void getDataFromLocalDB() {
-
+        Log.w(TAG, "getDataFromLocalDB: START" );
         LoaderManager.LoaderCallbacks<ArrayList<GasStation>> callback = MainActivity.this;
 
         //TODO: replace deprecated API
@@ -963,6 +1022,7 @@ public class MainActivity extends AppCompatActivity
         }else {
             getSupportLoaderManager().initLoader(GasStationsAsyncLoader.LOADER_ID, null, callback);
         }
+        Log.w(TAG, "getDataFromLocalDB: END" );
     }
 
     /* BEGIN LoaderCallbacks Methods */
@@ -998,50 +1058,95 @@ public class MainActivity extends AppCompatActivity
     private void readSettingsPreferences(SharedPreferences sharedPreferences) {
         readSharedPrefs(sharedPreferences, getString(R.string.pref_show_info_window));
         readSharedPrefs(sharedPreferences, getString(R.string.pref_units));
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_darkmode));
     }
 
     private void readSharedPrefs(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.pref_show_info_window))){
-            int currentVal = Integer.parseInt(
-                    sharedPreferences.getString(key, String.valueOf(SettingOption.SHOW_INFO_WINDOW.getValue()))
-            );
-            if (mShowInfoWindow != currentVal){
+            String currentVal = sharedPreferences.getString(key, SettingOption.SHOW_INFO_WINDOW);
+            if (!mShowInfoWindow.equals(currentVal)){
                 //if it has changed...
                 mShowInfoWindow = currentVal;
 
                 // this will trigger the menu creation method again
                 invalidateOptionsMenu();
             }
-            else{
-                Log.i(Utils.TAG, "MainActivity: ... from settings no changes");
-            }
         }
         if (key.equals(getString(R.string.pref_units))){
-            int currentVal = Integer.parseInt(
-                    sharedPreferences.getString(key, String.valueOf(SettingOption.UNITS_METRIC.getValue()))
-            );
-            if (mDisplayUnits != currentVal){
+            String currentVal = sharedPreferences.getString(key, SettingOption.UNITS_METRIC);
+            if (!mDisplayUnits.equals(currentVal)){
                 //if it has changed...
                 mDisplayUnits = currentVal;
 
                 refreshUiMeasures();
             }
-            else{
-                Log.i(Utils.TAG, "MainActivity: ... from settings no changes");
+        }
+        if (key.equals(getString(R.string.pref_darkmode))){
+            String currentVal = sharedPreferences.getString(key, SettingOption.DARKMODE_USE_SYSTEM);
+            if (!mDarkMode.equals(currentVal)){
+                //if it has changed...
+                mDarkMode = currentVal;
+                try {
+                    switch(mDarkMode){
+                        case SettingOption.DARKMODE_ENABLED:
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+//                            if (mMap != null) mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_dark_style));
+                            break;
+                        case SettingOption.DARKMODE_DISABLED:
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+//                            if (mMap != null) mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clear_style));
+                            break;
+                        default:
+                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                            break;
+                    }
+
+                }catch (Exception e){
+                    Log.w(TAG, "readSharedPrefs: Error applying theme");
+                }
             }
         }
     }
 
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        int nightModeFlags = getResources().getConfiguration().uiMode & UI_MODE_NIGHT_MASK;
+
+        if (nightModeFlags == UI_MODE_NIGHT_NO){
+            applyTheme(UI_MODE_NIGHT_NO);
+        }else{
+            applyTheme(UI_MODE_NIGHT_YES);
+        }
+    }
+
+    private void applyTheme(int uiModeNightNo) {
+        if (uiModeNightNo == UI_MODE_NIGHT_NO) {
+            getApplicationContext().setTheme(R.style.AppThemeDark);
+            setTheme(R.style.AppThemeDark);
+        }else
+        {
+            getApplicationContext().setTheme(R.style.AppTheme);
+            setTheme(R.style.AppTheme);
+        }
+
+
+    }
+
     private void refreshUiMeasures() {
+        Log.w(TAG, "refreshUiMeasures: START" );
         updateMarkerData();
 
         if (mRvNearbyPlaces != null && mRvNearbyPlaces.getAdapter() != null) {
             // force refresh of recycler view layout
+            Log.w(TAG, "refreshUiMeasures: notifyDataSetChanged");
             mRvNearbyPlaces.getAdapter().notifyDataSetChanged();
         }
+        Log.w(TAG, "refreshUiMeasures: END" );
     }
 
     private void updateMarkerData() {
+        Log.w(TAG, "updateMarkerData: START" );
         for (Marker marker:mMarkers) {
             Result gasStation = (Result) marker.getTag();
             if (gasStation != null) {
@@ -1057,5 +1162,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+        Log.w(TAG, "updateMarkerData: END" );
     }
 }

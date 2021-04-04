@@ -70,4 +70,6 @@
     <string name="closedQuestionText">Gas Station is closed! Do you really want to start navigation to it?</string>
     <string name="Yes">Yes</string>
     <string name="No">No</string>
+
+    <string name="UseSystemDarkMode">No</string>
 </resources>

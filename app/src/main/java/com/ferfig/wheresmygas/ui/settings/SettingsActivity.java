@@ -4,7 +4,6 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.ferfig.wheresmygas.R;
 
@@ -23,12 +22,7 @@ public class SettingsActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         setSupportActionBar(mAppBar);
-        mAppBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        mAppBar.setOnClickListener(v -> onBackPressed());
         mAppBar.setNavigationIcon(R.drawable.ic_back);
     }
 
