@@ -322,7 +322,7 @@ public class Utils {
     }
 
     public static boolean isDarkModeActive(Context context) {
-        String darkPref = context.getString(R.string.UseSystemDarkMode);
+        String darkPref = context.getString(R.string.SystemDarkModeIsActive);
         Log.w(TAG, "isDarkModeEnabled: darkPref = " + darkPref );
         return (darkPref.equals("Yes"));
     }
