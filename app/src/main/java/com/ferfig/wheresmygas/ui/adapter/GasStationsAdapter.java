@@ -24,7 +24,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     private final List<GasStation> mData;
 
-    private static String mSelectedGasStation;
+    private static String mSelectedGasStation = "";
 
     private final ArrayList<GasStation> mFavoriteGasStations;
 

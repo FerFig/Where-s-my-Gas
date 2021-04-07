@@ -75,7 +75,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -86,7 +85,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static android.content.res.Configuration.*;
+import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
+import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>>
@@ -749,6 +750,11 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+
+        String gasStationId = GasStationsAdapter.getSelectedGasStationPlaceId();
+        if (!gasStationId.isEmpty()) {
+            makeSureGasStationIsVisible(gasStationId);
+        }
         Log.w(TAG, "onMapReady: END");
     }
 
@@ -860,33 +866,7 @@ public class MainActivity extends AppCompatActivity
                 Result gasStationData = (Result) marker.getTag();
                 if (gasStationData != null) {
                     // make sure that the corresponding item is visible in recycler view
-                    GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
-                    if (gasStationAdapter!= null) {
-                        List<GasStation> gasStationsInAdapter = gasStationAdapter.getData();
-                        int position = 0;
-                        for (GasStation adapterGasStation : gasStationsInAdapter) {
-                            if (adapterGasStation.getPlaceId().equals(gasStationData.getPlaceId())) {
-                                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
-                                if (linearLayoutManager != null) {
-                                    RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(mRvNearbyPlaces.getContext()) {
-                                        @Override
-                                        protected int getVerticalSnapPreference() {
-                                            return LinearSmoothScroller.SNAP_TO_ANY;
-                                        }
-                                    };
-                                    smoothScroller.setTargetPosition(position);
-                                    linearLayoutManager.startSmoothScroll(smoothScroller);
-                                    //linearLayoutManager.smoothScrollToPosition(mRvNearbyPlaces, new RecyclerView.State(), position);
-                                    //linearLayoutManager.scrollToPositionWithOffset(position, 0);
-                                }
-                                GasStationsAdapter.setSelectedGasStationPlaceId(gasStationData.getPlaceId());
-                                Log.w(TAG, "updateLocationUI: onMarkerClick - position: ".concat(String.valueOf(position)) );
-                                gasStationAdapter.notifyDataSetChanged();
-                                break;
-                            }
-                            position++;
-                        }
-                    }
+                    makeSureGasStationIsVisible(gasStationData.getPlaceId());
                 }
                 return false;
             });
@@ -894,6 +874,34 @@ public class MainActivity extends AppCompatActivity
             Log.e("Exception: %s", e.getMessage());
         }
         Log.w(TAG, "updateLocationUI: END" );
+    }
+
+    private void makeSureGasStationIsVisible(String gasStationDataID) {
+        GasStationsAdapter gasStationAdapter = (GasStationsAdapter) mRvNearbyPlaces.getAdapter();
+        if (gasStationAdapter!= null) {
+            List<GasStation> gasStationsInAdapter = gasStationAdapter.getData();
+            int position = 0;
+            for (GasStation adapterGasStation : gasStationsInAdapter) {
+                if (adapterGasStation.getPlaceId().equals(gasStationDataID)) {
+                    LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRvNearbyPlaces.getLayoutManager();
+                    if (linearLayoutManager != null) {
+                        RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(mRvNearbyPlaces.getContext()) {
+                            @Override
+                            protected int getVerticalSnapPreference() {
+                                return LinearSmoothScroller.SNAP_TO_ANY;
+                            }
+                        };
+                        smoothScroller.setTargetPosition(position);
+                        linearLayoutManager.startSmoothScroll(smoothScroller);
+                    }
+                    GasStationsAdapter.setSelectedGasStationPlaceId(gasStationDataID);
+                    Log.w(TAG, "updateLocationUI: onMarkerClick - position: ".concat(String.valueOf(position)) );
+                    gasStationAdapter.notifyDataSetChanged();
+                    break;
+                }
+                position++;
+            }
+        }
     }
 
     /**
