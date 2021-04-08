@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
@@ -85,10 +84,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-import static android.content.res.Configuration.UI_MODE_NIGHT_NO;
-import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
-
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, SnackBarAction, LoaderManager.LoaderCallbacks<ArrayList<GasStation>>
         , SwipeRefreshLayout.OnRefreshListener
@@ -142,6 +137,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Read initial preferences and set Theme accordingly
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        readSettingsPreferences(sharedPreferences);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
         super.onCreate(savedInstanceState);
         Log.w(TAG, "onCreate: START");
 
@@ -164,10 +164,6 @@ public class MainActivity extends AppCompatActivity
         mAppBar.setNavigationIcon(R.mipmap.ic_launcher);
 
         mSrlNearbyPlaces.setOnRefreshListener(this);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        readSettingsPreferences(sharedPreferences);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         // Construct a FusedLocationProviderClient to get Last Know Location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -208,6 +204,9 @@ public class MainActivity extends AppCompatActivity
         //Deinitialize The Places API
         if (Places.isInitialized())
             Places.deinitialize();
+
+        if (mMap != null )
+            mMap.clear();
         Log.w(TAG, "onDestroy: END");
     }
 
@@ -233,7 +232,7 @@ public class MainActivity extends AppCompatActivity
         Log.w(TAG, "onCreateOptionsMenu: START");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.app_menu, menu);
-        if (mShowInfoWindow == SettingOption.HIDE_INFO_WINDOW){
+        if (mShowInfoWindow.equals(SettingOption.HIDE_INFO_WINDOW)){
             MenuItem infoItem = menu.findItem(R.id.menu_info);
             if (infoItem != null) {
                 infoItem.setVisible(false);
@@ -752,23 +751,22 @@ public class MainActivity extends AppCompatActivity
         }
 
         String gasStationId = GasStationsAdapter.getSelectedGasStationPlaceId();
-        if (!gasStationId.isEmpty()) {
+        if ( ! String.valueOf(gasStationId).equals("null") ) {
             makeSureGasStationIsVisible(gasStationId);
         }
         Log.w(TAG, "onMapReady: END");
     }
 
     private void refreshMapTheme() {
+        if (mMap == null) return;
         try {
             if (Utils.isDarkModeActive(this)) {
-                if (mMap != null)
-                    mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_dark_style));
+                mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_dark_style));
             } else {
-                if (mMap != null)
-                    mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clear_style));
+                mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clear_style));
             }
         } catch (Exception e) {
-            Log.e(TAG, "Can't find style. Error: ", e);
+            Log.e(TAG, "Can't apply style. Error: ", e);
         }
     }
 
@@ -1060,16 +1058,16 @@ public class MainActivity extends AppCompatActivity
     /* Preferences */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        readSharedPrefs(sharedPreferences, key);
+        readSharedPrefs(sharedPreferences, key, false);
     }
 
     private void readSettingsPreferences(SharedPreferences sharedPreferences) {
-        readSharedPrefs(sharedPreferences, getString(R.string.pref_show_info_window));
-        readSharedPrefs(sharedPreferences, getString(R.string.pref_units));
-        readSharedPrefs(sharedPreferences, getString(R.string.pref_darkmode));
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_show_info_window), true);
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_units), true);
+        readSharedPrefs(sharedPreferences, getString(R.string.pref_darkmode), true);
     }
 
-    private void readSharedPrefs(SharedPreferences sharedPreferences, String key) {
+    private void readSharedPrefs(SharedPreferences sharedPreferences, String key, boolean readOnly) {
         if (key.equals(getString(R.string.pref_show_info_window))){
             String currentVal = sharedPreferences.getString(key, SettingOption.SHOW_INFO_WINDOW);
             if (!mShowInfoWindow.equals(currentVal)){
@@ -1077,7 +1075,7 @@ public class MainActivity extends AppCompatActivity
                 mShowInfoWindow = currentVal;
 
                 // this will trigger the menu creation method again
-                invalidateOptionsMenu();
+                if (!readOnly) invalidateOptionsMenu();
             }
         }
         if (key.equals(getString(R.string.pref_units))){
@@ -1086,37 +1084,37 @@ public class MainActivity extends AppCompatActivity
                 //if it has changed...
                 mDisplayUnits = currentVal;
 
-                refreshUiMeasures();
+                if (!readOnly) refreshUiMeasures();
             }
         }
         if (key.equals(getString(R.string.pref_darkmode))){
             String currentVal = sharedPreferences.getString(key, SettingOption.DARKMODE_USE_SYSTEM);
-            if (!mDarkMode.equals(currentVal)){
+            if (!mDarkMode.equals(currentVal)) {
                 //if it has changed...
                 mDarkMode = currentVal;
-                try {
-                    switch(mDarkMode){
-                        case SettingOption.DARKMODE_ENABLED:
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-//                            if (mMap != null) mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_dark_style));
-                            break;
-                        case SettingOption.DARKMODE_DISABLED:
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-//                            if (mMap != null) mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_clear_style));
-                            break;
-                        default:
-                            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                            break;
-                    }
 
-                }catch (Exception e){
-                    Log.w(TAG, "readSharedPrefs: Error applying theme");
-                }
+                if (!readOnly){
+                    try {
+                        switch (mDarkMode) {
+                            case SettingOption.DARKMODE_ENABLED:
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                                break;
+                            case SettingOption.DARKMODE_DISABLED:
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                                break;
+                            default:
+                                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                                break;
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "readSharedPrefs: Error applying theme");
+                    }
+            }
             }
         }
     }
 
-    @Override
+/*    @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         int nightModeFlags = getResources().getConfiguration().uiMode & UI_MODE_NIGHT_MASK;
@@ -1137,9 +1135,7 @@ public class MainActivity extends AppCompatActivity
             getApplicationContext().setTheme(R.style.AppTheme);
             setTheme(R.style.AppTheme);
         }
-
-
-    }
+    } */
 
     private void refreshUiMeasures() {
         Log.w(TAG, "refreshUiMeasures: START" );

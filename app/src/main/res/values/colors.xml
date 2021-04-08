@@ -6,6 +6,7 @@
     <color name="colorAccent">#00BCD4</color>
 
     <color name="colorCardViewBackground">#F0F0F0</color>
+    <color name="colorCardViewBackgroundBlack">#4C4C4C</color>
     <color name="colorCardViewSelected">#FFC876</color>
 
     <color name="open_now">#4CAF50</color>

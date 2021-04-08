@@ -12,7 +12,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import com.ferfig.wheresmygas.R;
-import com.ferfig.wheresmygas.Utils;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener{
     @Override

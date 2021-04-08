@@ -4,7 +4,7 @@
     <ListPreference
         app:key="@string/pref_units"
         app:title="@string/pref_units"
-        app:icon="@drawable/pref_units"
+        app:icon="@drawable/pref_units_white"
         app:entries="@array/pref_units_option"
         app:entryValues="@array/pref_units_values"
         app:defaultValue="2"/>
@@ -12,7 +12,7 @@
     <ListPreference
         app:key="@string/pref_show_info_window"
         app:title="@string/pref_show_info_window"
-        app:icon="@drawable/pref_info"
+        app:icon="@drawable/pref_info_white"
         app:entries="@array/pref_show_info_option"
         app:entryValues="@array/pref_show_info_values"
         app:defaultValue="0"/>
@@ -20,7 +20,7 @@
     <ListPreference
         app:key="@string/pref_darkmode"
         app:title="@string/pref_darkmode"
-        app:icon="@drawable/pref_dark_mode"
+        app:icon="@drawable/pref_dark_mode_white"
         app:entries="@array/pref_darkmode_option"
         app:entryValues="@array/pref_darkmode_values"
         app:defaultValue="4"/>
@@ -29,24 +29,24 @@
         <Preference
             app:key="@string/pref_about_label"
             app:summary="@string/pref_about_summary"
-            app:icon="@drawable/pref_gas_station"
+            app:icon="@drawable/pref_gas_station_white"
             app:persistent="false"/>
         <Preference
             app:key="@string/pref_send_me_an_email"
             app:title="@string/pref_send_me_an_email"
-            app:icon="@drawable/pref_send"
+            app:icon="@drawable/pref_send_white"
             app:summary="@string/pref_send_me_an_email_text"
             app:persistent="false"/>
         <PreferenceScreen app:key="@string/pref_view_my_apps"
             android:title="@string/pref_view_my_apps"
-            app:icon="@drawable/pref_shop"
+            app:icon="@drawable/pref_shop_white"
             android:summary="@string/pref_view_my_apps_text">
             <intent android:action="android.intent.action.VIEW"
                 android:data="https://play.google.com/store/apps/developer?id=Fernando+Figueiredo" />
         </PreferenceScreen>
         <PreferenceScreen app:key="@string/pref_rate_me"
             android:title="@string/pref_rate_me"
-            app:icon="@drawable/pref_star"
+            app:icon="@drawable/pref_star_white"
             android:summary="@string/pref_rate_me_text">
             <intent android:action="android.intent.action.VIEW"
                 android:data="https://play.google.com/store/apps/details?id=com.ferfig.wheresmygas" />
