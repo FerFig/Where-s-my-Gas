@@ -8,8 +8,8 @@
     <color name="colorCardViewBackground">#F0F0F0</color>
     <color name="colorCardViewSelected">#FFC876</color>
 
-    <color name="colorTextFontSelected">@android:color/holo_green_light</color>
-    <color name="colorTextFontNotSelected">@android:color/holo_purple</color>
+    <color name="colorTextFontSelected">#0F0F0F</color>
+    <color name="colorTextFontNotSelected">#000000</color>
 
     <color name="open_now">#4CAF50</color>
     <color name="open_unknown">#FFEB3B</color>
