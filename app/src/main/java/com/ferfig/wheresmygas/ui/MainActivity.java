@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Read initial preferences and set Theme accordingly
+        // Read initial preferences to set Theme accordingly
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         readSettingsPreferences(sharedPreferences);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
@@ -182,8 +182,8 @@ public class MainActivity extends AppCompatActivity
             getDataFromLocalDB();
         }
 
-        // Schedule the firebase job service to update widget data
-        SyncUtils.scheduleUpdateService(this);
+        // TODO Schedule the firebase job service to update widget data
+        // SyncUtils.scheduleUpdateService(this);
 
         //Prompt to rate the app
         try {

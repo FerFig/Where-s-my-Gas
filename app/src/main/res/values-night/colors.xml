@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorCardViewBackground">#2C2C2C</color>
+    <color name="colorTextFontSelected">@android:color/holo_red_light</color>
+    <color name="colorTextFontNotSelected">@android:color/holo_blue_bright</color>
+</resources>

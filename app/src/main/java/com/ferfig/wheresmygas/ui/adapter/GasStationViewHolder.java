@@ -66,10 +66,7 @@ public class GasStationViewHolder extends RecyclerView.ViewHolder {
         if (gasStationData.getPlaceId().equals(GasStationsAdapter.getSelectedGasStationPlaceId()))
             mGasStationCardView.setBackgroundResource(R.color.colorCardViewSelected);
         else {
-            if ( Utils.isDarkModeActive(context))
-                mGasStationCardView.setBackgroundResource(R.color.colorCardViewBackgroundBlack);
-            else
-                mGasStationCardView.setBackgroundResource(R.color.colorCardViewBackground);
+            mGasStationCardView.setBackgroundResource(R.color.colorCardViewBackground);
         }
         Result gasStationDetails = gasStationData.getDetails();
         int imgResource;
