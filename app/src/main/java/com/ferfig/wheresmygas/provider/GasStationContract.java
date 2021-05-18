@@ -14,7 +14,11 @@ public class GasStationContract {
     // This is the path for the "gas_stations" directory
     public static final String PATH_GAS_STATIONS = "gas_stations";
 
+    private GasStationContract() {}
+
     public static final class GasStationEntry implements BaseColumns {
+
+        private GasStationEntry() {}
 
         // TaskEntry content URI = base content URI + path
         public static final Uri CONTENT_URI =

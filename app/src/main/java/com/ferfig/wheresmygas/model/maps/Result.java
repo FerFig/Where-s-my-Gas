@@ -52,7 +52,7 @@ public class Result implements Parcelable
     @SerializedName("vicinity")
     @Expose
     private String vicinity;
-    public final static Parcelable.Creator<Result> CREATOR = new Creator<Result>() {
+    public static final Parcelable.Creator<Result> CREATOR = new Creator<Result>() {
 
         public Result createFromParcel(Parcel in) {
             return new Result(in);

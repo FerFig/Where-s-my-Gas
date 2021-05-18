@@ -129,7 +129,6 @@ public class GasStation implements Parcelable {
      * @return distance to param location
      */
     public float getDistanceTo(Location location) {
-        //
         if (location == null) return -1f;
         Location gasLocation = new Location(LocationManager.GPS_PROVIDER);
         gasLocation.setLatitude(this.getLatitude());

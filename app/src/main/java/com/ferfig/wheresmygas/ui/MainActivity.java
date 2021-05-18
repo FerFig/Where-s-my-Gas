@@ -420,11 +420,11 @@ public class MainActivity extends AppCompatActivity
         RetrofitClient client = retrofit.create(RetrofitClient.class);
 
         Map<String, String> params = new HashMap<>();
-        params.put(ClientConfig.paramLocation,
+        params.put(ClientConfig.PARAM_LOCATION,
                 ClientConfig.formatParamLocation(mSearchLocation.getLatitude(), mSearchLocation.getLongitude()));
-        params.put(ClientConfig.paramRadius, String.valueOf(mSearchAreaRadius)); // in meters
-        params.put(ClientConfig.paramType, ClientConfig.paramTypeValue); // only Gas Stations
-        params.put(ClientConfig.paramKey, getString(R.string.google_api_key)); // Google Maps API key
+        params.put(ClientConfig.PARAM_RADIUS, String.valueOf(mSearchAreaRadius)); // in meters
+        params.put(ClientConfig.PARAM_TYPE, ClientConfig.PARAM_TYPE_VALUE); // only Gas Stations
+        params.put(ClientConfig.PARAM_KEY, getString(R.string.google_api_key)); // Google Maps API key
 
         Call<GasStationsList> gasStationsCall =  client.getStations(params);
         gasStationsCall.enqueue(new Callback<GasStationsList>() {

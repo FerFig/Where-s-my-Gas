@@ -12,9 +12,11 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.preference.PreferenceManager;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -22,20 +24,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import com.ferfig.wheresmygas.model.GasStation;
 import com.ferfig.wheresmygas.ui.SnackBarAction;
 import com.ferfig.wheresmygas.ui.SnackBarActions;
 import com.ferfig.wheresmygas.ui.settings.SettingOption;
-import com.google.android.gms.common.util.Strings;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 
 public class Utils {
+
+    private Utils() {}
 
     public static final String TAG = "Where's my Gas";
 
@@ -70,11 +74,18 @@ public class Utils {
 
     public static boolean noInternetIsAvailable(@NonNull Activity activity) {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo ni = null;
-        if (cm != null) {
-            ni = cm.getActiveNetworkInfo();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network nw = cm.getActiveNetwork();
+            if (nw == null) return false;
+            NetworkCapabilities actNw = cm.getNetworkCapabilities(nw);
+            return actNw == null || !(actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
+                    actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH));
+        } else {
+            NetworkInfo nwInfo = cm.getActiveNetworkInfo();
+            return nwInfo == null || !nwInfo.isConnected();
         }
-        return (ni == null || !ni.isConnected());
     }
 
     public static boolean isLocationServiceActive(@NonNull Activity activity) {
@@ -151,19 +162,6 @@ public class Utils {
     public static Intent buildDirectionsToIntent(@NonNull GasStation gasStationData, boolean withGoogleMaps ) {
         // Prepare the intent to call navigation to Gas Station
 
-//        // With Maps URLs universal cross-platform
-//        final String BASE_GOOGLE_DIRECTIONS_URL = "https://www.google.com/maps/dir/?api=1";
-//        Uri directionsUri = Uri.parse(BASE_GOOGLE_DIRECTIONS_URL)
-//                .buildUpon()
-//                .appendQueryParameter("travelmode", "driving")
-//                .appendQueryParameter("destination_place_id", gasStationData.getId())
-//                .appendQueryParameter("destination", // required parameter
-//                        String.valueOf(gasStationData.getLatitude())
-//                                .concat(",")
-//                                .concat(String.valueOf(gasStationData.getLongitude())))
-//                .appendQueryParameter("dir_action", "navigate") // start navigation immediately
-//                .build();
-
         // With Google Maps Intents for Android
         final String BASE_GOOGLE_NAVIGATION_URL = "google.navigation:q=%1$s,%2$s&mode=d";
         Uri directionsUri = Uri.parse(
@@ -214,12 +212,10 @@ public class Utils {
         return location;
     }
 
-    public static boolean isFavoriteGasStation(@NonNull String gasStationId, @NonNull ArrayList<GasStation> favoritesGasStations) {
-        if (favoritesGasStations != null){
-            for (GasStation gasStation:favoritesGasStations) {
-                if (gasStation.getPlaceId().equals(gasStationId)){
-                    return true;
-                }
+    public static boolean isFavoriteGasStation(@NonNull String gasStationId, @NonNull List<GasStation> favoritesGasStations) {
+        for (GasStation gasStation:favoritesGasStations) {
+            if (gasStation.getPlaceId().equals(gasStationId)){
+                return true;
             }
         }
         return false;
@@ -240,18 +236,18 @@ public class Utils {
         final  AlertDialog.Builder bld = new AlertDialog.Builder(context);
         bld.setIcon(R.drawable.ic_launcher_foreground);
         bld.setMessage(message);
-        if (!Strings.isEmptyOrWhitespace(title)) {
+        if (title != null && title.length() > 0) {
             bld.setTitle(title);
         }else {
             bld.setTitle(R.string.app_name);
         }
-        if (!Strings.isEmptyOrWhitespace(okBtnText)) {
+        if (okBtnText != null && okBtnText.length() > 0) {
             bld.setPositiveButton(okBtnText,  okBtnClickListener);
         }
-        if (!Strings.isEmptyOrWhitespace(neutralBtnText)) {
+        if (neutralBtnText != null && neutralBtnText.length() > 0) {
             bld.setNeutralButton(neutralBtnText,  neutralBtnClickListener);
         }
-        if (!Strings.isEmptyOrWhitespace(cancelBtnText)) {
+        if (cancelBtnText != null && cancelBtnText.length() > 0) {
             bld.setNegativeButton(cancelBtnText,  cancelBtnClickListener);
         }
         bld.create().show();
@@ -278,7 +274,7 @@ public class Utils {
             SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
             defaultValue = mSettings.getString(prefName, defaultValue);
         } catch (Exception e) {
-            Log.d(TAG, "readStringSetting: " + e.getMessage());;
+            Log.d(TAG, "readStringSetting: " + e.getMessage());
         }
         return defaultValue;
     }

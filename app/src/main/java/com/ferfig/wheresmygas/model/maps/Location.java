@@ -17,7 +17,7 @@ public class Location implements Parcelable
     @SerializedName("lng")
     @Expose
     private Double lng;
-    public final static Parcelable.Creator<Location> CREATOR = new Creator<Location>() {
+    public static final Parcelable.Creator<Location> CREATOR = new Creator<Location>() {
 
 
         public Location createFromParcel(Parcel in) {

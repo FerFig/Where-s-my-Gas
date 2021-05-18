@@ -14,7 +14,7 @@ public class OpeningHours implements Parcelable
     @SerializedName("open_now")
     @Expose
     private Boolean openNow;
-    public final static Parcelable.Creator<OpeningHours> CREATOR = new Creator<OpeningHours>() {
+    public static final Parcelable.Creator<OpeningHours> CREATOR = new Creator<OpeningHours>() {
 
         public OpeningHours createFromParcel(Parcel in) {
             return new OpeningHours(in);

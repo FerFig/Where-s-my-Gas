@@ -54,6 +54,8 @@ public class SyncUtils {
 
     private static long mSearchAreaRadius = Utils.MAP_DEFAULT_SEARCH_RADIUS;
 
+    private SyncUtils() {}
+
     public static void scheduleUpdateService(Context context) {
         if (sInitialized) return;
 
@@ -100,7 +102,6 @@ public class SyncUtils {
         }else{
             SyncUtils.saveLastLocationToPreferences(context, lastKnownLocation);
         }
-        if (lastKnownLocation == null) return;
 
         GasStation favoriteGasStation = SyncUtils.getFavoriteGasStationFromLocalDB(context, lastKnownLocation);
         if (favoriteGasStation != null){
@@ -236,11 +237,11 @@ public class SyncUtils {
         RetrofitClient client = retrofit.create(RetrofitClient.class);
 
         Map<String, String> params = new HashMap<>();
-        params.put(ClientConfig.paramLocation,
+        params.put(ClientConfig.PARAM_LOCATION,
                 ClientConfig.formatParamLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()));
-        params.put(ClientConfig.paramRadius, String.valueOf(mSearchAreaRadius)); // in meters
-        params.put(ClientConfig.paramType, ClientConfig.paramTypeValue); // only Gas Stations
-        params.put(ClientConfig.paramKey,
+        params.put(ClientConfig.PARAM_RADIUS, String.valueOf(mSearchAreaRadius)); // in meters
+        params.put(ClientConfig.PARAM_TYPE, ClientConfig.PARAM_TYPE_VALUE); // only Gas Stations
+        params.put(ClientConfig.PARAM_KEY,
                 context.getString(R.string.google_api_key)); // Google Maps API key
 
         Call<GasStationsList> gasStationsCall =  client.getStations(params);
@@ -255,7 +256,7 @@ public class SyncUtils {
 
                     List<GasStation> gasStationList = new ArrayList<>();
 
-                    if (gasStationListResult.size() > 0) {
+                    if (!gasStationListResult.isEmpty()) {
                         for (Result gasStation : gasStationListResult) {
                             Double gasLat = gasStation.getGeometry().getLocation().getLat();
                             Double gasLon = gasStation.getGeometry().getLocation().getLng();

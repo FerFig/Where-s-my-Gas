@@ -10,6 +10,8 @@ import com.ferfig.wheresmygas.model.GasStation;
 import com.ferfig.wheresmygas.provider.GasStationContract.GasStationEntry;
 
 public class DbUtils {
+    private DbUtils() {}
+
     public static boolean addGasStationToDB(Context context, GasStation gasStation) {
         ContentValues cv = new ContentValues();
 

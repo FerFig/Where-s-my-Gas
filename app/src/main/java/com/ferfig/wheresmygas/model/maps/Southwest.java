@@ -17,7 +17,7 @@ public class Southwest implements Parcelable
     @SerializedName("lng")
     @Expose
     private Double lng;
-    public final static Parcelable.Creator<Southwest> CREATOR = new Creator<Southwest>() {
+    public static final Parcelable.Creator<Southwest> CREATOR = new Creator<Southwest>() {
 
         public Southwest createFromParcel(Parcel in) {
             return new Southwest(in);

@@ -23,8 +23,10 @@ public class GasStationContentProvider extends ContentProvider {
     public static final int GAS_STATION = 100;
     public static final int GAS_STATION_WITH_ID = 101;
 
-    // Declare a static variable for the Uri matcher that you construct
+    // Declare a static variable for the Uri matcher that must be constructed
     private static final UriMatcher sUriMatcher = buildUriMatcher();
+
+    public static final String UNKNOWN_URI = "Unknown uri: ";
 
     // Define a static buildUriMatcher method that associates URI's with their int match
     public static UriMatcher buildUriMatcher() {
@@ -67,7 +69,7 @@ public class GasStationContentProvider extends ContentProvider {
                     sortOrder);
             // Default exception
         } else {
-            throw new UnsupportedOperationException("Unknown uri: " + uri);
+            throw new UnsupportedOperationException(UNKNOWN_URI + uri);
         }
 
         // Set a notification URI on the Cursor and return that Cursor
@@ -106,7 +108,7 @@ public class GasStationContentProvider extends ContentProvider {
             }
             // Default case throws an UnsupportedOperationException
         } else {
-            throw new UnsupportedOperationException("Unknown uri: " + uri);
+            throw new UnsupportedOperationException(UNKNOWN_URI + uri);
         }
 
         // Notify the resolver if the uri has been changed, and return the newly inserted URI
@@ -142,7 +144,7 @@ public class GasStationContentProvider extends ContentProvider {
                 gasStationsDeleted = db.delete(GasStationEntry.TABLE_NAME, "_id=?", new String[]{id});
                 break;
             default:
-                throw new UnsupportedOperationException("Unknown uri: " + uri);
+                throw new UnsupportedOperationException(UNKNOWN_URI + uri);
         }
         // Notify the resolver of a change and return the number of items deleted
         if (gasStationsDeleted != 0) {
@@ -173,7 +175,7 @@ public class GasStationContentProvider extends ContentProvider {
             gasStationsUpdated = db.update(GasStationEntry.TABLE_NAME, values, "_id=?", new String[]{id});
             // Default exception
         } else {
-            throw new UnsupportedOperationException("Unknown uri: " + uri);
+            throw new UnsupportedOperationException(UNKNOWN_URI + uri);
         }
 
         // Notify the resolver of a change and return the number of items updated

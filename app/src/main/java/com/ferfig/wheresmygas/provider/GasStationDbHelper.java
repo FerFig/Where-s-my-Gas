@@ -3,6 +3,7 @@ package com.ferfig.wheresmygas.provider;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
 import com.ferfig.wheresmygas.provider.GasStationContract.GasStationEntry;
 
@@ -20,7 +21,7 @@ public class GasStationDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Create a table to hold the gas stations data
         final String SQL_CREATE_TABLE = "CREATE TABLE " + GasStationEntry.TABLE_NAME + " (" +
-                GasStationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 GasStationEntry.COLUMN_GAS_STATION_ID + " TEXT NOT NULL, " +
                 GasStationEntry.COLUMN_GAS_STATION_NAME + " TEXT NOT NULL, " +
                 GasStationEntry.COLUMN_GAS_STATION_IMAGE_URL + " TEXT, " +

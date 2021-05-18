@@ -17,7 +17,7 @@ public class PlusCode implements Parcelable
     @SerializedName("global_code")
     @Expose
     private String globalCode;
-    public final static Parcelable.Creator<PlusCode> CREATOR = new Creator<PlusCode>() {
+    public static final Parcelable.Creator<PlusCode> CREATOR = new Creator<PlusCode>() {
 
         public PlusCode createFromParcel(Parcel in) {
             return new PlusCode(in);

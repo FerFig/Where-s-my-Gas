@@ -17,7 +17,7 @@ public class Viewport implements Parcelable
     @SerializedName("southwest")
     @Expose
     private Southwest southwest;
-    public final static Parcelable.Creator<Viewport> CREATOR = new Creator<Viewport>() {
+    public static final Parcelable.Creator<Viewport> CREATOR = new Creator<Viewport>() {
 
         public Viewport createFromParcel(Parcel in) {
             return new Viewport(in);

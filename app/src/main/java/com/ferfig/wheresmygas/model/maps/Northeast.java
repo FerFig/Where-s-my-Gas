@@ -17,7 +17,7 @@ public class Northeast implements Parcelable
     @SerializedName("lng")
     @Expose
     private Double lng;
-    public final static Parcelable.Creator<Northeast> CREATOR = new Creator<Northeast>() {
+    public static final Parcelable.Creator<Northeast> CREATOR = new Creator<Northeast>() {
 
         public Northeast createFromParcel(Parcel in) {
             return new Northeast(in);

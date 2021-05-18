@@ -26,7 +26,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
 
     private static String mSelectedGasStation = "";
 
-    private final ArrayList<GasStation> mFavoriteGasStations;
+    private final List<GasStation> mFavoriteGasStations;
 
     public interface OnItemClickListener {
         void onItemClick(GasStation gasStationData);
@@ -45,7 +45,7 @@ public class GasStationsAdapter extends RecyclerView.Adapter<GasStationViewHolde
     private final OnDirectionsClickListener directionsClickListener;
 
     public GasStationsAdapter(Context context, List<GasStation> gasStationDataList,
-                              ArrayList<GasStation> favoriteGasStations,
+                              List<GasStation> favoriteGasStations,
                               Location lastKnownLocation,
                               OnItemClickListener gasStationClickListener,
                               OnFavoritesClickListener gasStationFavoritesClickListener,

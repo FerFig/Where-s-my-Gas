@@ -10,6 +10,8 @@ import java.lang.reflect.Type;
 public class GasStationTypeConverter {
     private static final Gson gson = new Gson();
 
+    private GasStationTypeConverter() {}
+
     /*** Converter for Gas Station details **/
     public static Result stringToGasStationList(String data) {
         if (data == null) {

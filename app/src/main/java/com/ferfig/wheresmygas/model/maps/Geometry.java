@@ -17,7 +17,7 @@ public class Geometry implements Parcelable
     @SerializedName("viewport")
     @Expose
     private Viewport viewport;
-    public final static Parcelable.Creator<Geometry> CREATOR = new Creator<Geometry>() {
+    public static final Parcelable.Creator<Geometry> CREATOR = new Creator<Geometry>() {
 
 
         public Geometry createFromParcel(Parcel in) {

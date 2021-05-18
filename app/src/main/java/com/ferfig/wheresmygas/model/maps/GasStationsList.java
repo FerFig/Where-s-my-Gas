@@ -22,7 +22,7 @@ public class GasStationsList implements Parcelable
     @SerializedName("status")
     @Expose
     private String status;
-    public final static Parcelable.Creator<GasStationsList> CREATOR = new Creator<GasStationsList>() {
+    public static final Parcelable.Creator<GasStationsList> CREATOR = new Creator<GasStationsList>() {
 
 
         public GasStationsList createFromParcel(Parcel in) {

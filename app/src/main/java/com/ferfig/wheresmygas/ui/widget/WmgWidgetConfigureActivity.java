@@ -6,7 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import com.google.android.material.snackbar.Snackbar;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -87,7 +88,7 @@ public class WmgWidgetConfigureActivity extends Activity {
         if (selectedValue == SelectedOption.NONE){
             Utils.showSnackBar(findViewById(android.R.id.content),
                     getString(R.string.sb_text_widget_no_selection),
-                    Snackbar.LENGTH_LONG);
+                    BaseTransientBottomBar.LENGTH_LONG);
         }
         else {
             saveWidgetPref(context, mAppWidgetId, selectedValue);

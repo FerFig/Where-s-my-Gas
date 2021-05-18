@@ -25,7 +25,7 @@ public class Photo implements Parcelable
     @SerializedName("width")
     @Expose
     private Integer width;
-    public final static Parcelable.Creator<Photo> CREATOR = new Creator<Photo>() {
+    public static final Parcelable.Creator<Photo> CREATOR = new Creator<Photo>() {
 
         public Photo createFromParcel(Parcel in) {
             return new Photo(in);
